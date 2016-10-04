@@ -34,7 +34,13 @@ def main(args):
     repertoire = validation_repertoire(args.repertoire)       
     parametres_connexion = validation_connexion(args.host, args.database, args.port, args.user, args.password)        
     effacer_schemas_dvf_existants = not args.no_delete
-    generer_dvf_plus(parametres_connexion, repertoire, effacer_schemas_dvf_existants = effacer_schemas_dvf_existants)
+    repertoire_sortie_scripts = os.path.join(repertoire, 'sorties')
+    if not os.path.isdir(repertoire_sortie_scripts):
+        os.mkdir(repertoire_sortie_scripts)
+    generer_dvf_plus(parametres_connexion, 
+                     repertoire, 
+                     effacer_schemas_dvf_existants = effacer_schemas_dvf_existants,
+                     repertoire_scripts = repertoire_sortie_scripts)
 
 if __name__=='__main__':
     args = sys.argv

@@ -10,24 +10,35 @@ FICHIERS_ANNEXES = (os.path.join(REPERTOIRE_COURANT, 'ressources', 'artcgil135b.
                     os.path.join(REPERTOIRE_COURANT, 'ressources', 'natcult.csv'), 
                     os.path.join(REPERTOIRE_COURANT, 'ressources','natcultspe.csv'))
 
-def generer_dvf_plus(parametres_connexion, repertoire_donnees, effacer_schemas_dvf_existants= True):
+def generer_dvf_plus(parametres_connexion, repertoire_donnees, effacer_schemas_dvf_existants=True, repertoire_scripts = 'sorties'):
     reussite, erreurs, fichiers_sources, tables_sources, departements = detection_fichiers_sources(repertoire_donnees)
     if not reussite:
         sys.exit(erreurs[0])
     sous_groupes_departements = repartition_departements(departements)    
     for sous_groupe_departements in sous_groupes_departements:
-        valid_dvf = creation_dvf(parametres_connexion, fichiers_sources, tables_sources, sous_groupe_departements, effacer_schemas_dvf_existants=effacer_schemas_dvf_existants)
+        valid_dvf = creation_dvf(parametres_connexion, 
+                                 fichiers_sources, 
+                                 tables_sources, 
+                                 sous_groupe_departements, 
+                                 effacer_schemas_dvf_existants=effacer_schemas_dvf_existants, 
+                                 repertoire_scripts = repertoire_scripts)
         if valid_dvf:
-            valid_dvfplus = creation_dvf_plus(parametres_connexion, sous_groupe_departements, effacer_schemas_dvf_existants)
+            valid_dvfplus = creation_dvf_plus(parametres_connexion, 
+                                              sous_groupe_departements, 
+                                              effacer_schemas_dvf_existants,
+                                              repertoire_scripts = repertoire_scripts)
         effacer_schemas_dvf_existants = False
     return True
 
-def creation_dvf(parametres_connexion, fichiers_sources, tables_sources, departements, effacer_schemas_dvf_existants):
+def creation_dvf(parametres_connexion, fichiers_sources, tables_sources, departements, effacer_schemas_dvf_existants, repertoire_scripts = 'sorties'):
     '''
     CREATION DVF
     '''    
     # initialisation
-    dvf = DVF(*parametres_connexion, departements=departements)
+    dvf = DVF(*parametres_connexion, 
+              departements=departements, 
+              script = os.path.join(repertoire_scripts, 'script_dvf.sql'), 
+              log = os.path.join(repertoire_scripts, 'log.txt'))
     dvf.charger_gestionnaire_depuis_sqlite(BASE_SQLITE)
     dvf.start_script()
 
@@ -65,12 +76,14 @@ def creation_dvf(parametres_connexion, fichiers_sources, tables_sources, departe
     dvf.deconnecter()
     return True
 
-def creation_dvf_plus(parametres_connexion, departements, effacer_schemas_dvf_existants):
+def creation_dvf_plus(parametres_connexion, departements, effacer_schemas_dvf_existants, repertoire_scripts = 'sorties'):
     '''
     CREATION DVF+
     '''
     # initialisation du dvf_plus principal (qui reprend tous les départements)
-    dvf_plus = DVF_PLUS(*parametres_connexion, departements = departements)
+    dvf_plus = DVF_PLUS(*parametres_connexion, 
+                        departements = departements, 
+                        script = os.path.join(repertoire_scripts, 'script_dvf_plus.sql'))
     dvf_plus.charger_gestionnaire_depuis_sqlite(BASE_SQLITE)
     dvf_plus.start_script()  
 
@@ -83,7 +96,9 @@ def creation_dvf_plus(parametres_connexion, departements, effacer_schemas_dvf_ex
     # creation et lancement des threads (avec des dvf_plus secondaires) qui vont se répartir les départements
     threads = []
     for i, div_departement in enumerate(div_departements):
-        d = DVF_PLUS(*parametres_connexion, departements = div_departement, script = 'sorties/script_dvf_plus_secondaire{0}.sql'.format(str(i)))
+        d = DVF_PLUS(*parametres_connexion, 
+                     departements = div_departement, 
+                     script = os.path.join(repertoire_scripts, 'script_dvf_plus_secondaire{0}.sql'.format(str(i))))
         thr = DVF_PLUSThread(d, gestionnaire = dvf_plus.gestionnaire)
         threads.append(thr)
         thr.start()
