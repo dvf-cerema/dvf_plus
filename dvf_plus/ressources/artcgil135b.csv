@@ -1,0 +1,35 @@
+1049*1|CGI 1049 *1 : Acquisition par une société HLM autre qu'un office public
+1115|CGI 1115 : Exo DE sur achats avec engagement de revente
+1115*1|CGI 1115*1 : Acquisitions par les marchands de biens
+1115*2|CGI 1115*2 : Echanges par les marchands de biens
+1137|CGI 1137 : Acquisitions en vue reboisement
+1594D*1|CGI 1594 D *1 : MTO Immeuble ou de droits immobiliers 
+1594D*2|CGI 1594 D * 2 : Vente de terrain à bâtir
+1594FQA|CGI 1594 FquinquièsA : Ventes par marchands de biens dimmeubles achevés dans les 5 ans 
+1594FQA*1|CGI 1594 F quinquies A *1 : Vente d'immeuble dans les 5 ans de l'achèvement,TVA perçue en SIE
+1594FQA*2|CGI 1594 F quinquies A *2 : Vente en état futur d'achèvement d'un immeuble, TVA perçue en SIE
+1594FQa|CGI 1594Fquinquiesa : Droit de 0,60% sur MTO d'immeuble soumises à TVA déposée sur CA3 
+1594FQB|CGI 1594 FquinquièsB : Droit de 0,60% sur MTO d'immeuble rénovation urbaine
+1594FQD|CGI 1594 FquinquièsD : Droit  de 0,60% sur MTO d'immeuble rural
+1594FQE|CGI 1594 FquinquièsE : Acquisitions jeunes agriculteurs ds territoires ruraux de dvpmt prioritaire 
+1594FQE I|CGI 1594 FQE I: Acquisitions par jeunes agriculteurs bénéficiaires des aides à l'installation
+1594FQE II|CGI 1594 FQE II: Acquisitions en vue de donner à bail à de jeunes agriculteurs
+1594FQF|CGI 1594 FquinquièsF: Droit  de 0,60% sur MTO terres incultes, abandonnées
+1594FQG|CGI 1594 FquinquièsG : Droit de 0,60% sur ATO immeuble par SAFER et SICA (DOM)
+1594Fter|CGI 1594Fter : abattement voté conseil général sur MTO immeuble habitation
+1594H|CGI 1594 H: Acquisitions logements par HLM ou SEM
+1594Ibis|CGI 1594 I bis : Acquisition dans DOM, d'un immeuble avec engagement de l'affecter à usage d'hôtel
+1594OGA|CGI 1594OGA : exo enregistrement sur MTO terrains et immeubles soumises à TVA
+257-7-1*2|CGI 257-7-1 *2 :  Vente en état futur d'achèvement TVA 19,60%, TPF à 0,6% et salaire à 0,1%
+257-7-1*3|CGI 257-7-1 *3 : Vente de terrain à bâtir soumise à la TVA 19,60 %, DF à 125 EUR et salaire à 0,1%
+278 sexies I.1|CGI 278 sexies-I.1: Vente aux HLM de terrain à bâtir. TVA à 5,50%, DFà 125 EUR et salaire à 0,05 %
+278 sexies I.2|CGI 278 sexies-I.2 : Vente aux HLM. TVA au taux  de 5,50 %, DFà 125 EUR et salaire à 0,05 %
+278 sexies I.3|CGI 278 sexies-I.3: ventes de logements sociaux neufs à usage locatif
+278bis|CGI 278 bis : TVA au taux réduit
+278sex-I|CGI 278 sexiès I : TVA au taux réduit sur ATO de TAB et logements sociaux
+278sexIAM|CGI 278 sexiès IAM : TVA réduite sur ATO de TAB avec TPF à 0,60% en Alsace Moselle
+296-1-a-*1|CGI 296-1-a *1 : Vente aux HLM immeuble, terrain à bâtir, soumise à TVA ds les DOM (hors Guyane)
+296-1-a-*2|CGI 296-1-a *2 : VEFA aux HLM d'immeuble, soumise à TVA dans les DOM (hors Guyane)
+296-1-b-*2|CGI 296-1-b *2 : VEFA d'un immeuble soumise à TVA 8,50% situé dans les DOM (hors Guyane)
+691bis|CGI 691 bis : Acquisition de TAB soumise à droit fixe de 125 EUR - TVA sur CA3
+810-IV|CGI 810-IV : Droit fixe exigible sur apports soumis à TVA

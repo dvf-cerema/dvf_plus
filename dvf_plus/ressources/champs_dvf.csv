@@ -1,0 +1,199 @@
+table : mutation | table des mutations
+idmutation|identifiant de clef primaire de la table mutation|serial|PK||DVF|mutation|1
+idmutinvar|identifiant invariant de la mutation|varchar(18)|||DVF|mutation|2
+idnatmut|identifiant de clef primaire de la table ann_nature_mutation|integer|||DVF|mutation|3
+codservch|code du service de conservation des hypothèques|varchar(7)|U||DVF|mutation|4
+refdoc|référence d'enregistrement du document (acte de vente)|varchar(10)|U||DVF|mutation|5
+datemut|date de signature du document (acte de vente)|Date|||DVF|mutation|6
+anneemut|annee de signature du document|integer|||DVF|mutation|7
+moismut|mois de signature du document|integer|||DVF|mutation|8
+coddep|code du département|varchar(3)|C||DVF|mutation|9
+libnatmut|libellé de la nature de mutation|varchar(45)||ann_nature_mutation|DVF+|mutation|10
+nbartcgi|nombre d'articles du Code Général des Impôts (CGI) associés à la mutation|integer||mutation_article_cgi|DVF+|mutation|11
+l_artcgi|liste des codes d’articles CGI (Code Général des Impôts) associés à la mutation|varchar[]||mutation_article_cgi|DVF+|mutation|12
+vefa|vrai si la mutation est une Vente en l'état futur d'achèvement (VEFA)|boolean||annexes|DVF+|mutation|13
+valeurfonc|prix ou évaluation déclarée dans le cadre d'une mutation onéreuse|numeric||disposition|DVF+|mutation|14
+nbdispo|nombre de dispositions associées à la mutation|integer||disposition|DVF+|mutation|15
+nblot|nombre total de lots dans la mutation|integer||disposition|DVF+|mutation|16
+nbcomm|nombre de communes concernées par la mutation|integer||disposition_parcelle|DVF+|mutation|17
+l_codinsee|liste des codes INSEE des communes concernées par la mutation|varchar[]||disposition_parcelle|DVF+|mutation|18
+nbsection|nombre de sections concernées par la mutation|integer||disposition_parcelle|DVF+|mutation|19
+l_section|liste des sections concernées par la mutation|varchar[]||disposition_parcelle|DVF+|mutation|20
+nbpar|nombre de parcelles concernées par la mutation|integer||disposition_parcelle|DVF+|mutation|21
+l_idpar|liste des identifiants de parcelles concernées par la mutation (idpar)|varchar[]||disposition_parcelle|DVF+|mutation|22
+nbparmut|nombre de parcelles ayant muté|integer||disposition_parcelle|DVF+|mutation|23
+l_idparmut|liste des identifiants de parcelles ayant muté (idpar)|varchar[]||disposition_parcelle|DVF+|mutation|24
+nbsuf|nombre de subdivisions fiscales ayant muté|integer||suf|DVF+|mutation|25
+sterr|surface de terrain ayant muté|numeric||suf|DVF+|mutation|26
+l_dcnt|Liste ordonnée des surfaces de suf de 01 à 13|numeric[]||suf|DVF+|mutation|27
+nbvolmut|nombre de volumes ayant muté|integer||volume|DVF+|mutation|28
+nblocmut|nombre de locaux ayant muté|integer||local|DVF+|mutation|29
+l_idlocmut|liste des identifiants de locaux ayant muté (idloc)|varchar[]||local|DVF+|mutation|30
+nblocmai|nombre de maisons ayant muté|integer||local|DVF+|mutation|31
+nblocapt|nombre d'appartements ayant muté|integer||local|DVF+|mutation|32
+nblocdep|nombre de dépendances ayant muté|integer||local|DVF+|mutation|33
+nblocact|nombre de locaux d'activités ayant muté|integer||local|DVF+|mutation|34
+nbapt1pp|nombre d'appartements avec une pièce principale ayant muté|integer||local|DVF+|mutation|35
+nbapt2pp|nombre d'appartements avec 2 pièces principales ayant muté|integer||local|DVF+|mutation|36
+nbapt3pp|nombre d'appartements avec 3 pièces principales ayant muté|integer||local|DVF+|mutation|37
+nbapt4pp|nombre d'appartements avec 4 pièces principales ayant muté|integer||local|DVF+|mutation|38
+nbapt5pp|nombre d'appartements avec au moins 5 pièces principales ayant muté|integer||local|DVF+|mutation|39
+nbmai1pp|nombre de maisons avec une pièce principale ayant muté|integer||local|DVF+|mutation|40
+nbmai2pp|nombre de maisons avec 2 pièces principales ayant muté|integer||local|DVF+|mutation|41
+nbmai3pp|nombre de maisons avec 3 pièces principales ayant muté|integer||local|DVF+|mutation|42
+nbmai4pp|nombre de maisons avec 4 pièces principales ayant muté|integer||local|DVF+|mutation|43
+nbmai5pp|nombre de maisons avec au moins 5 pièces principales ayant muté|integer||local|DVF+|mutation|44
+sbati|surface de l'ensemble du bâti ayant muté|numeric||local|DVF+|mutation|45
+sbatmai|surface de l'ensemble des maisons ayant muté|numeric||local|DVF+|mutation|46
+sbatapt|surface de l'ensemble des appartements ayant muté|numeric||local|DVF+|mutation|47
+sbatact|surface de l'ensemble du bâti d’activité ayant muté|numeric||local|DVF+|mutation|48
+sapt1pp|surface de l'ensemble des appartements avec 1 pièce principale ayant muté|numeric||local|DVF+|mutation|49
+sapt2pp|surface de l'ensemble des appartements avec 2 pièces principales ayant muté|numeric||local|DVF+|mutation|50
+sapt3pp|surface de l'ensemble des appartements avec 3 pièces principales ayant muté|numeric||local|DVF+|mutation|51
+sapt4pp|surface de l'ensemble des appartements avec 4 pièces principales ayant muté|numeric||local|DVF+|mutation|52
+sapt5pp|surface de l'ensemble des appartements avec au moins 5 pièces principales ayant muté|numeric||local|DVF+|mutation|53
+smai1pp|surface de l'ensemble des maisons avec 1 pièce principale ayant muté|numeric||local|DVF+|mutation|54
+smai2pp|surface de l'ensemble des maisons avec 2 pièces principales ayant muté|numeric||local|DVF+|mutation|55
+smai3pp|surface de l'ensemble des maisons avec 3 pièces principales ayant muté|numeric||local|DVF+|mutation|56
+smai4pp|surface de l'ensemble des maisons avec 4 pièces principales ayant muté|numeric||local|DVF+|mutation|57
+smai5pp|surface de l'ensemble des maisons avec au moins 5 pièces principales ayant muté|numeric||local|DVF+|mutation|58
+table : disposition_parcelle | table des parcelles attachées à une disposition
+iddispopar|identifiant pour clef primaire|serial|PK||DVF|disposition_parcelle|1
+iddispo|identifiant de la table disposition|integer|U||DVF|disposition_parcelle|2
+idparcelle|identifiant de la table parcelle|integer|U||DVF|disposition_parcelle|3
+idmutation|identifiant de clef primaire de la table mutation|integer|||DVF|disposition_parcelle|4
+idpar|identifiant de la parcelle (Fichiers fonciers)|varchar(14)||parcelle|DVF+|disposition_parcelle|5
+coddep|code du département|varchar(3)|C||DVF|disposition_parcelle|6
+codcomm|code insee de la commune|varchar(3)||parcelle|DVF+|disposition_parcelle|7
+prefsect|prefixe de section de la parcelle|varchar(3)||parcelle|DVF+|disposition_parcelle|8
+nosect|numéro de section de la parcelle|varchar(2)||parcelle|DVF+|disposition_parcelle|9
+noplan|numéro de la parcelle|varchar(4)||parcelle|DVF+|disposition_parcelle|10
+datemut|date de signature du document (acte de vente)|Date|||DVF|disposition_parcelle|11
+anneemut|annee de signature du document|integer|||DVF|disposition_parcelle|12
+moismut|mois de signature du document|integer|||DVF|disposition_parcelle|13
+parcvendue|Vrai si la parcelle fait partie de la vente|boolean||suf|DVF+|disposition_parcelle|14
+nbmutjour|nombre de mutations de la parcelle au cours de la journée|integer||suf|DVF+|disposition_parcelle|15
+nbmutannee|nombre de mutations de la parcelle au cours de l'année calendaire|integer||suf|DVF+|disposition_parcelle|16
+datemutpre|date de la précédente mutation de la parcelle (date antérieure)|Date||suf|DVF+|disposition_parcelle|17
+l_idmutpre|identifiants des mutations précédentes de la parcelle ayant eu lieu à la date de mutation précédente (datemutpre)|integer[]||suf|DVF+|disposition_parcelle|18
+datemutsui|date de la mutation suivante de la parcelle (date postérieure)|Date||suf|DVF+|disposition_parcelle|19
+l_idmutsui|identifiants des mutations suivantes de la parcelle ayant eu lieu à la date de mutation suivante (datemutsui)|integer[]||suf|DVF+|disposition_parcelle|20
+dcnt01|surface de suf de type 01 ayant muté|numeric||suf|DVF+|disposition_parcelle|21
+dcnt02|surface de suf de type 02  ayant muté|numeric||suf|DVF+|disposition_parcelle|22
+dcnt03|surface de suf de type 03 ayant muté|numeric||suf|DVF+|disposition_parcelle|23
+dcnt04|surface de suf de type 04 ayant muté|numeric||suf|DVF+|disposition_parcelle|24
+dcnt05|surface de suf de type 05 ayant muté|numeric||suf|DVF+|disposition_parcelle|25
+dcnt06|surface de suf de type 06 ayant muté|numeric||suf|DVF+|disposition_parcelle|26
+dcnt07|surface de suf de type 07 ayant muté|numeric||suf|DVF+|disposition_parcelle|27
+dcnt08|surface de suf de type 08 ayant muté|numeric||suf|DVF+|disposition_parcelle|28
+dcnt09|surface de suf de type 09 ayant muté|numeric||suf|DVF+|disposition_parcelle|29
+dcnt10|surface de suf de type 10 ayant muté|numeric||suf|DVF+|disposition_parcelle|30
+dcnt11|surface de suf de type 11 ayant muté|numeric||suf|DVF+|disposition_parcelle|31
+dcnt12|surface de suf de type 12 ayant muté|numeric||suf|DVF+|disposition_parcelle|32
+dcnt13|surface de suf de type 13 ayant muté|numeric||suf|DVF+|disposition_parcelle|33
+dcntsol|surface de suf de type sol ayant muté|numeric||suf|DVF+|disposition_parcelle|34
+dcntagri|surface de suf de type agricole ayant muté|numeric||suf|DVF+|disposition_parcelle|35
+dcntnat|surface de suf de type naturel ayant muté|numeric||suf|DVF+|disposition_parcelle|36
+table : local | table des locaux
+iddispoloc|identifiant pour clef primaire|serial|PK||DVF|local|1
+iddispopar|identifiant de la table disposition_parcelle|integer|U||DVF|local|2
+idpar|identifiant de la parcelle (Fichiers fonciers)|varchar(14)|||DVF|local|3
+idmutation|identifiant de clef primaire de la table mutation|integer|||DVF|local|4
+idloc|identifiant du local (Fichier Fonciers)|varchar(12)|||DVF|local|5
+identloc|identifiant du local|varchar(7)|U||DVF|local|6
+codtyploc|code du type de local|integer|||DVF|local|7
+libtyploc|libellé du type de local|varchar(254)|||DVF|local|8
+nbpprinc|nombre de pièces principales|integer|||DVF|local|9
+sbati|surface réelle attachée à l'identifiant local|numeric|||DVF|local|10
+coddep|code du département|varchar(3)|C||DVF|local|11
+datemut|date de signature du document (acte de vente)|Date|||DVF|local|12
+anneemut|annee de signature du document|integer|||DVF|local|13
+moismut|mois de signature du document|integer|||DVF|local|14
+nbmutjour|nombre de mutations du local au cours de la journée|integer||local|DVF+|local|15
+nbmutannee|nombre de mutations du local au cours de l'année calendaire|integer||local|DVF+|local|16
+datemutpre|date de la précédente mutation du local|Date||local|DVF+|local|17
+l_idmutpre|identifiants des mutations précédentes du local ayant eu lieu à la date de mutation précédente (datemutpre)|integer[]||local|DVF+|local|18
+datemutsui|date de la mutation suivante du local|Date||local|DVF+|local|19
+l_idmutsui|identifiants des mutations suivantes du local ayant eu lieu à la date de mutation suivante (datemutsui)|integer[]||local|DVF+|local|20
+table : adresse | table contenant les adresses (provenant des parcelles et des locaux
+idadresse|identifiant pour clef primaire|serial|PK||DVF|adresse|1
+novoie|numéro de la voie|integer|||DVF|adresse|2
+btq|indice de répétition|varchar(1)|||DVF|adresse|3
+typvoie|type de voie|varchar(4)|||DVF|adresse|4
+codvoie|code de la voie|varchar(4)|||DVF|adresse|5
+voie|libellé de la voie|varchar(254)|||DVF|adresse|6
+codepostal|code postal|varchar(5)|||DVF|adresse|7
+commune|libellé de la commune|varchar(45)|||DVF|adresse|8
+idadrinvar|identifiant invariant de la table adresse|varchar(532)|U||DVF|adresse|9
+coddep|code du département|varchar(3)|C||DVF|adresse|10
+table : adresse_dispoparc | table de liaison entre la table adresse et la table disposition_parcelle
+idadresse|identifiant de la table adresse|integer|||DVF|adresse_dispoparc|1
+iddispopar|identifiant de la table disposition_parcelle|integer|||DVF|adresse_dispoparc|2
+coddep|code du département|varchar(3)|C||DVF|adresse_dispoparc|3
+idmutation|identifiant de clef primaire de la table mutation|integer|||DVF|adresse_dispoparc|4
+table : adresse_local | table de liaison entre la table adresse et la table local
+idadresse|identifiant de la table adresse|integer|||DVF|adresse_local|1
+iddispoloc|identifiant de la table local|integer|||DVF|adresse_local|2
+coddep|code du département|varchar(3)|C||DVF|adresse_local|3
+idmutation|identifiant de clef primaire de la table mutation|integer|||DVF|adresse_local|4
+table : disposition | table des dispositions
+iddispo|identifiant pour clef primaire|serial|PK||DVF|disposition|1
+idmutation|identifiant de clef primaire de la table mutation|integer|U||DVF|disposition|2
+nodispo|numéro de disposition|integer|U||DVF|disposition|3
+valeurfonc|prix ou évaluation déclarée dans le cadre d'une mutation onéreuse|numeric|||DVF|disposition|4
+nblot|nombre total de lots dans la disposition|integer|||DVF|disposition|5
+coddep|code du département|varchar(3)|C||DVF|disposition|6
+table : lot | table des lots (seuls les 5 premiers lots sont mentionnés)
+iddispolot|identifiant pour clef primaire|serial|PK||DVF|lot|1
+iddispopar|identifiant de la table disposition_parcelle|integer|U||DVF|lot|2
+idmutation|identifiant de clef primaire de la table mutation|integer|||DVF|lot|3
+iddispoloc|identifiant de la table local|integer|U||DVF|lot|4
+nolot|numéro du lot|varchar(7)|U||DVF|lot|5
+scarrez|surface Loi Carrez du lot|numeric|U||DVF|lot|6
+coddep|code du département|varchar(3)|C||DVF|lot|7
+table : mutation_article_cgi | table des articles du code général des impôts (CGI) attachés à la mutation
+idmutation|identifiant de clef primaire de la table mutation|integer|PK||DVF|mutation_article_cgi|1
+idartcgi|identifiant de la table annexe ann_cgi|integer|PK||DVF|mutation_article_cgi|2
+ordarticgi|numéro de l'ordre de l'article cgi|integer|||DVF|mutation_article_cgi|3
+coddep|code du département|varchar(3)|C||DVF|mutation_article_cgi|4
+table : parcelle | table des parcelles
+idparcelle|identifiant pour clef primaire|serial|PK||DVF|parcelle|1
+idpar|identifiant de la parcelle (Fichiers fonciers)|varchar(14)|U||DVF|parcelle|2
+coddep|code du département|varchar(3)|C||DVF|parcelle|3
+codcomm|code insee de la commune|varchar(3)|||DVF|parcelle|4
+prefsect|prefixe de section de la parcelle|varchar(3)|||DVF|parcelle|5
+nosect|numéro de section de la parcelle|varchar(2)|||DVF|parcelle|6
+noplan|numéro de la parcelle|varchar(4)|||DVF|parcelle|7
+table : suf | table des subdivisions fiscales
+iddisposuf|identifiant pour clef primaire|serial|PK||DVF|suf|1
+iddispopar|identifiant de la table disposition_parcelle|integer|U||DVF|suf|2
+idmutation|identifiant de clef primaire de la table mutation|integer|||DVF|suf|3
+nbsufidt|nombre de suf identiques|integer|U||DVF|suf|4
+sterr|surface de terrain ayant muté|numeric|||DVF|suf|5
+natcult|libellé de nature de culture|varchar(2)|||DVF|suf|6
+natcultspe|groupe de nature de culture spéciale|varchar(5)|||DVF|suf|7
+idsufinvar|identifiant invariant de la table suf|varchar(18)|U||DVF|suf|8
+coddep|code du département|varchar(3)|C||DVF|suf|9
+nodcnt|type de la suf|integer|||DVF|suf|10
+table : volume | table des volumes (division de l'espace dans la hauteur pour certaines co-propriétés verticales
+iddispovol|identifiant pour clef primaire|serial|PK||DVF|volume|1
+iddispopar|identifiant de la table disposition_parcelle|integer|U||DVF|volume|2
+idmutation|identifiant de clef primaire de la table mutation|integer|||DVF|volume|3
+novolume|numéro de volume|varchar(7)|U||DVF|volume|4
+coddep|code du département|varchar(3)|C||DVF|volume|5
+table : ann_cgi | table contenant les différents articles CGI
+idartcgi||serial|PK||DVF|ann_cgi|1
+artcgi||varchar(20)|U||DVF|ann_cgi|2
+libartcgi||varchar(254)|||DVF|ann_cgi|3
+table : ann_nature_culture | table contenant les différentes natures de culture
+natcult||varchar(2)|||DVF|ann_nature_culture|1
+libnatcult||varchar(254)|||DVF|ann_nature_culture|2
+table : ann_nature_culture_speciale | table contenant les différentes natures de culture spéciale
+natcultspe||varchar(5)|||DVF|ann_nature_culture_speciale|1
+libnatcusp||varchar(254)|||DVF|ann_nature_culture_speciale|2
+table : ann_nature_mutation | table contenant les natures de mutation
+idnatmut|identifiant de clef primaire de la table ann_nature_mutation|serial|PK||DVF|ann_nature_mutation|1
+libnatmut|libellé de la nature de mutation|varchar(45)|U||DVF|ann_nature_mutation|2
+table : ann_type_local | table contenant les types de locaux
+codtyploc||integer|||DVF|ann_type_local|1
+libtyploc||varchar(254)|||DVF|ann_type_local|2

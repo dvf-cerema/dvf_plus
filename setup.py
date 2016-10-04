@@ -1,0 +1,32 @@
+"""
+Configuration de la création du package dvf_plus
+
+  python setup.py sdist
+
+Le résultat est dans le répertoire dist
+
+Installation de l'archive sur un autre environnement
+
+  pip install dvf-plus-0.1.2.zip
+
+
+"""
+
+from setuptools import setup
+from setuptools import find_packages
+
+
+setup(
+    name='dvf_plus',
+    version='0.1.2',
+    description='module permettant la création d\'une base DVF+',
+    author='Antoine HERMAN',
+    author_email='antoine.herman@cerema.fr',
+    url='http://www.cerema.fr',
+    package_dir={'dvf_plus': 'dvf_plus'},
+    packages = find_packages(),
+    include_package_data=True,
+    install_requires=['pg>=0.1.5'],
+)
+
+# eof
