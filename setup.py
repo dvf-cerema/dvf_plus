@@ -22,7 +22,7 @@ setup(
     description='module permettant la création d\'une base DVF+',
     author='Antoine HERMAN',
     author_email='antoine.herman@cerema.fr',
-    url='http://www.cerema.fr',
+    url='https://github.com/dvf-cerema/dvf_plus',
     package_dir={'dvf_plus': 'dvf_plus'},
     packages = find_packages(),
     include_package_data=True,
