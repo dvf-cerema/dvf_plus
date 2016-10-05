@@ -3,6 +3,79 @@ import csv
 from datetime import datetime
 
 
+class RepertoireDonneesDVF():
+    
+    def __init__(self, repertoire):
+        self.repertoire = repertoire
+        self.fichiers_txt = self.recuperer_fichiers_txt()
+
+    def recuperer_fichiers_txt(self):
+        fichiers_txt = [os.path.join(self.repertoire, fichier) for fichier in os.listdir(self.repertoire) if fichier.endswith('.txt')]
+        return [FichierDonneesDVF(fichier) for fichier in fichiers_txt]
+    
+    @property
+    def fichiers_valides(self):        
+        return [fichier for fichier in self.fichiers_txt if fichier.valide]
+    
+    @property
+    def departements(self):
+        departements_tmp = []
+        for fichier in self.fichiers_valides:
+            departements_tmp.extend(fichier.departements)
+        return list(set(departements_tmp))
+    
+    @property
+    def fichiers_sources(self):
+        [(fichier.date_max, fichier.chemin_fichier) for fichier in self.fichiers_valides] 
+
+class FichierDonneesDVF():
+    
+    def __init__(self, chemin_fichier):
+        self.chemin_fichier = chemin_fichier
+        self._valide = None
+        self._departements = None
+        self._date_max = None
+        self._erreur = None
+    
+    def parcourir_fichier(self):
+        if self._valide is None:
+            self._departements = []
+            self._date_max = datetime(1,1,1,0,0)
+            with open(self.chemin_fichier, 'r', encoding='utf-8') as f:
+                csv_reader = csv.reader(f, delimiter = '|')
+                next(csv_reader)
+                for n, ligne in enumerate(csv_reader):
+                    if len(ligne) != 43:
+                        self._valide = False
+                        self._erreur =  'La ligne {0} du fichier {1} ne possède pas le bon nombre de champs. Le fichier est ignoré.'.format(str(n+1), self.chemin_fichier)
+                        return
+                    if ligne[18] not in self._departements:
+                        self._departements.append(ligne[18])
+                    if datetime.strptime(ligne[8], '%d/%m/%Y') > self._date_max:
+                        self._date_max =  datetime.strptime(ligne[8], '%d/%m/%Y')
+            self._valide = True
+            self._erreur = ''
+    
+    @property    
+    def valide(self):
+        self.parcourir_fichier()
+        return self._valide
+    
+    @property
+    def departements(self):
+        self.parcourir_fichier()
+        return self._departements
+        
+    @property
+    def date_max(self):
+        self.parcourir_fichier()
+        return self._date_max
+    
+    @property
+    def erreur(self):
+        self.parcourir_fichier()
+        return self._erreur      
+
 def repartition_departements(departements):
     '''
     permet de découper les départements en sous-listes 
@@ -79,3 +152,7 @@ def _ordonner_fichiers_txt(fichiers):
     fichiers_ordonnes = [fichier for date, fichier in fichiers]
     fichiers_ordonnes.reverse()
     return fichiers_ordonnes
+
+if __name__ == '__main__':
+    r = RepertoireDonneesDVF('/home/antoine/data_dvf/test')
+    print(r.fichiers_sources.chemin_fichier)

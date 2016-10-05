@@ -5,23 +5,23 @@ from .traitement import BASE_SQLITE
 from .traitement import FICHIERS_ANNEXES
 from .controle import repartition_departements, detection_fichiers_sources
 
-def generer_dvf_plus(parametres_connexion, repertoire_donnees, effacer_schemas_dvf_existants=True, repertoire_scripts = 'sorties'):
-    reussite, erreurs, fichiers_sources, tables_sources, departements = detection_fichiers_sources(repertoire_donnees)
+def generer_dvf_plus(contexte):
+    reussite, erreurs, fichiers_sources, tables_sources, departements = detection_fichiers_sources(contexte.repertoire)
     if not reussite:
         sys.exit(erreurs[0])
     sous_groupes_departements = repartition_departements(departements)    
     for sous_groupe_departements in sous_groupes_departements:
-        valid_dvf = creation_dvf(parametres_connexion, 
+        valid_dvf = creation_dvf(contexte.parametres_connexion, 
                                  fichiers_sources, 
                                  tables_sources, 
                                  sous_groupe_departements, 
-                                 effacer_schemas_dvf_existants=effacer_schemas_dvf_existants, 
-                                 repertoire_scripts = repertoire_scripts)
+                                 effacer_schemas_dvf_existants=contexte.effacer_schemas_dvf_existants, 
+                                 repertoire_scripts = contexte.repertoire_scripts)
         if valid_dvf:
-            valid_dvfplus = creation_dvf_plus(parametres_connexion, 
+            valid_dvfplus = creation_dvf_plus(contexte.parametres_connexion, 
                                               sous_groupe_departements, 
-                                              effacer_schemas_dvf_existants,
-                                              repertoire_scripts = repertoire_scripts)
+                                              contexte.effacer_schemas_dvf_existants,
+                                              repertoire_scripts = contexte.repertoire_scripts)
         effacer_schemas_dvf_existants = False
     return True
 
