@@ -1,14 +1,9 @@
 import os, sys, threading
 from .traitement.dvfclass import DVF
 from .traitement.dvfclass import DVF_PLUS
+from .traitement import BASE_SQLITE
+from .traitement import FICHIERS_ANNEXES
 from .controle import repartition_departements, detection_fichiers_sources
-
-
-REPERTOIRE_COURANT = os.path.dirname(os.path.abspath(__file__))
-BASE_SQLITE = os.path.join(REPERTOIRE_COURANT, 'ressources', 'table_variables.sqlite3')
-FICHIERS_ANNEXES = (os.path.join(REPERTOIRE_COURANT, 'ressources', 'artcgil135b.csv'), 
-                    os.path.join(REPERTOIRE_COURANT, 'ressources', 'natcult.csv'), 
-                    os.path.join(REPERTOIRE_COURANT, 'ressources','natcultspe.csv'))
 
 def generer_dvf_plus(parametres_connexion, repertoire_donnees, effacer_schemas_dvf_existants=True, repertoire_scripts = 'sorties'):
     reussite, erreurs, fichiers_sources, tables_sources, departements = detection_fichiers_sources(repertoire_donnees)

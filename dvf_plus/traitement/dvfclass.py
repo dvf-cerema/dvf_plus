@@ -15,7 +15,6 @@ def log_compte(table):
         return interne
     return compteur
 
-
 class DVFMere(PgOutils):
 
     def __init__(self, hote, base, port, utilisateur, motdepasse, departements, script = 'sorties/script.sql'):
