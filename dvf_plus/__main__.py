@@ -16,8 +16,7 @@ def cmd_line(args):
     return parser.parse_args()
 
 def validation_repertoire(repertoire):
-    if repertoire == '.':
-        repertoire = os.getcwd()
+    repertoire = os.path.abspath(repertoire)
     if not os.path.isdir(repertoire):
         sys.exit("Erreur :{0} n'est pas un chemin de répertoire valide.".format(repertoire))
     return repertoire
@@ -29,7 +28,8 @@ def validation_connexion(hote, bdd, port, utilisateur, mdp):
     except Exception as e:
         sys.exit("Connexion à la base de données impossible : {0}".format(str(e)))
 
-def main(args):
+def main():
+    args = sys.argv
     args = cmd_line(args)
     repertoire = validation_repertoire(args.repertoire)       
     parametres_connexion = validation_connexion(args.host, args.database, args.port, args.user, args.password)        
@@ -42,9 +42,8 @@ def main(args):
                      effacer_schemas_dvf_existants = effacer_schemas_dvf_existants,
                      repertoire_scripts = repertoire_sortie_scripts)
 
-if __name__=='__main__':
-    args = sys.argv
-    main(args)
+if __name__=='__main__':    
+    main()
     print('''TRAITEMENT TERMINE''')
     
 #eof
