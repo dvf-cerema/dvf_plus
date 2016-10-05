@@ -5,7 +5,7 @@ from .controle import repartition_departements, detection_fichiers_sources
 
 
 REPERTOIRE_COURANT = os.path.dirname(os.path.abspath(__file__))
-BASE_SQLITE = os.path.join(REPERTOIRE_COURANT, 'ressources', 'db_init.sqlite3')
+BASE_SQLITE = os.path.join(REPERTOIRE_COURANT, 'ressources', 'table_variables.sqlite3')
 FICHIERS_ANNEXES = (os.path.join(REPERTOIRE_COURANT, 'ressources', 'artcgil135b.csv'), 
                     os.path.join(REPERTOIRE_COURANT, 'ressources', 'natcult.csv'), 
                     os.path.join(REPERTOIRE_COURANT, 'ressources','natcultspe.csv'))
