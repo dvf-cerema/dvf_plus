@@ -1,6 +1,7 @@
 import os
 import csv
 from datetime import datetime
+from operator import attrgetter
 
 
 class RepertoireDonneesDVF():
@@ -26,7 +27,30 @@ class RepertoireDonneesDVF():
     
     @property
     def fichiers_sources(self):
-        [(fichier.date_max, fichier.chemin_fichier) for fichier in self.fichiers_valides] 
+        '''
+        Renvoie la liste des chemin des fichiers DVF valides du répertoire, classé du plus récent au plus ancien
+        '''
+        fichiers_valides_tries = sorted(self.fichiers_valides, key=attrgetter('date_max', 'chemin_fichier'), reverse=True)
+        return [fichier.chemin_fichier for fichier in fichiers_valides_tries]
+    
+    @property
+    def erreurs(self):
+        if len(self.fichiers_txt) == 0:
+            return ['Aucun fichier txt dans le répertoire selectionné.']
+        if len(self.fichiers_valides) == 0:
+            return ['Aucun fichier de données valide dans le répertoire selectionné.']
+        return [fichier.erreur for fichier in self.fichiers_valides if fichier.erreur]
+    
+    def a_un_fichier_valide(self):
+        for fichier in self.fichiers_valides:
+            if fichier.erreur == '':
+                return True
+        return False
+    
+    @property
+    def tables_sources(self):
+        return ['tmp' + str(i) for i, fichier in enumerate(self.fichiers_sources)]
+       
 
 class FichierDonneesDVF():
     
@@ -154,5 +178,5 @@ def _ordonner_fichiers_txt(fichiers):
     return fichiers_ordonnes
 
 if __name__ == '__main__':
-    r = RepertoireDonneesDVF('/home/antoine/data_dvf/test')
-    print(r.fichiers_sources.chemin_fichier)
+    r = RepertoireDonneesDVF('C:/Users/antoine.herman/Desktop/DATA - EPF')
+    print(r.fichiers_sources)

@@ -25,8 +25,7 @@ class Contexte():
     
     def __init__(self, args):
         self.repertoire = self.validation_repertoire(args.repertoire)
-        self.parametres_connexion = validation_connexion(host=args.host, bdd=args.database, port=args.port, user=args.user, pwd=args.password)
-        self.repertoire_scripts = creation_repertoire_sortie_scripts()
+        self.parametres_connexion = self.validation_connexion(host=args.host, bdd=args.database, port=args.port, user=args.user, pwd=args.password)
         self.effacer_schemas_existants = not args.no_delete
         
     def validation_repertoire(self, repertoire):
@@ -35,18 +34,18 @@ class Contexte():
             sys.exit("Erreur :{0} n'est pas un chemin de répertoire valide.".format(repertoire))
         return repertoire
     
-    def validation_connexion(host, bdd, port, user, pwd):
+    def validation_connexion(self, host, bdd, port, user, pwd):
         try:
             conn = psycopg2.connect(host=host, database=bdd, port=port, user=user, password=pwd)
             return (host, bdd, port, user, pwd)
         except Exception as e:
             sys.exit("Connexion à la base de données impossible : {0}".format(str(e)))
     
-    def creation_repertoire_sortie_scripts(self):
+    def chemin_sortie(self, nom_fichier):
         repertoire_scripts = os.path.join(self.repertoire, 'sorties')
-        if not os.isdir(repertoire_scripts):
+        if not os.path.isdir(repertoire_scripts):
             os.mkdir(repertoire_scripts)
-        return repertoire_scripts
+        return os.path.join(repertoire_scripts, nom_fichier)
 
 if __name__=='__main__':    
     main()
