@@ -36,26 +36,32 @@ class DVFMere(PgOutils):
         self.gestionnaire.charger_tables_depuis_sqlite(fichier_sqlite, table_des_variables)
 
     def creation_tables_principales_et_departementales(self, tables, code_creation):
-        valid = self.creer_tables_principales_vides(tables, code_creation)
-        valid2 = self.creer_tables_departementales_vides(tables, code_creation)
-        valid3 = self.creer_insert_triggers(tables, code_creation)
-        return True if valid and valid2 and valid3 else False
+        if not self.creer_tables_principales_vides(tables, code_creation):
+            return False
+        if not self.creer_tables_departementales_vides(tables, code_creation):
+            return False
+        if not self.creer_insert_triggers(tables, code_creation):
+            return False
+        return True
 
     def creer_tables_principales_vides(self, tables, code_creation):
         for table in tables:
-            valid = self.creation_table_depuis_gestionnaire(self.schema_principal, table, code_creation)
-            valid2 = self._ajout_commentaire_table(self.schema_principal, table, code_creation)
-            valid3 = self._ajout_commentaires_champs(self.schema_principal, table, code_creation)
-            if not (valid and valid2 and valid3):
+            if not self.creation_table_depuis_gestionnaire(self.schema_principal, table, code_creation):
+                return False
+            if not self._ajout_commentaire_table(self.schema_principal, table, code_creation):
+                return False
+            if not self._ajout_commentaires_champs(self.schema_principal, table, code_creation):
                 return False
         return True
             
     def creation_table_depuis_gestionnaire(self, schema, table, code_creation):
         nom_table_dvf = self.nom_table_dvf(table, code_creation)
         table_obj = self.table(nom_table_dvf, code_creation)
-        valid, nb = self.effacer_table(schema, table)
-        valid2, nb = self._creer_table(schema, table, table_obj.lister_variables_et_types())
-        return True if valid and valid2 else False
+        success, _ = self.effacer_table(schema, table)
+        if not success:
+            return False
+        success, _ = self._creer_table(schema, table, table_obj.lister_variables_et_types())
+        return success
     
     @requete_sql
     def _creer_table(self, schema, table, champs):
@@ -64,21 +70,32 @@ class DVFMere(PgOutils):
     def creer_tables_departementales_vides(self, tables, code_creation):
         for schema in self.schemas_departementaux:
             for table in tables:
-                valid = self.creation_table_heritee_depuis_gestionnaire(schema, table, code_creation)
-                valid2 = self._ajout_commentaire_table(schema, table, code_creation)
-                valid3 = self._ajout_commentaires_champs(schema, table, code_creation)
-                if not (valid and valid2 and valid3):
+                if not self.creation_table_heritee_depuis_gestionnaire(schema, table, code_creation):
+                    return False
+                if not self._ajout_commentaire_table(schema, table, code_creation):
+                    return False
+                if not self._ajout_commentaires_champs(schema, table, code_creation):
                     return False
         return True
     
     def creation_table_heritee_depuis_gestionnaire(self, schema, table, code_creation, schema_mere = 'dvf', table_mere = None):
         table_mere = table if not table_mere else table_mere
-        valid, nb = self.effacer_table(schema, table)
-        valid2, nb = self._creer_table_heritee(schema, table, schema_mere, table_mere)
-        valid3, nb = self._ajout_clef_primaire(schema, table, code_creation)
-        valid4, nb = self._ajout_contrainte_unicite(schema, table, code_creation)
-        valid5, nb = self._ajout_contrainte_check_departement(schema, table, code_creation)
-        return True if (valid and valid2 and valid3 and valid4 and valid5) else False
+        success, _ = self.effacer_table(schema, table)
+        if not success:
+            return False
+        success, _ = self._creer_table_heritee(schema, table, schema_mere, table_mere)
+        if not success:
+            return False
+        success, _ = self._ajout_clef_primaire(schema, table, code_creation)
+        if not success:
+            return False
+        success, _ = self._ajout_contrainte_unicite(schema, table, code_creation)
+        if not success:
+            return False
+        success, _ = self._ajout_contrainte_check_departement(schema, table, code_creation)
+        if not success:
+            return False
+        return True
     
     @requete_sql
     def _creer_table_heritee(self, schema, table, schema_mere, table_mere):       
@@ -86,8 +103,8 @@ class DVFMere(PgOutils):
     
     def creer_insert_triggers(self, tables, code_creation):
         for table in tables:
-            valid, nb = self._ajout_insert_trigger(self.schema_principal, table, code_creation)
-            if not valid:
+            success, _ = self._ajout_insert_trigger(self.schema_principal, table, code_creation)
+            if not success:
                 return False
         return True
     
@@ -116,13 +133,13 @@ class DVFMere(PgOutils):
     def _ajout_commentaire_table(self, schema, table, code_creation):
         nom_table_dvf = self.nom_table_dvf(table, code_creation)
         commentaire = self.table(nom_table_dvf, code_creation).description    
-        valid, nb = self.ajouter_commentaire_sur_table(schema, table, commentaire)
-        return valid 
+        success, _ = self.ajouter_commentaire_sur_table(schema, table, commentaire)
+        return success 
     
     def _ajout_commentaires_champs(self, schema, table, code_creation):
         for ch, commentaire in self.recuperer_commentaires(table, code_creation).items():
-            valid, nb = self.ajouter_commentaire_sur_champ(schema, table, ch, commentaire)
-            if not valid:
+            success, _ = self.ajouter_commentaire_sur_champ(schema, table, ch, commentaire)
+            if not success:
                 return False
         return True
     
@@ -157,16 +174,19 @@ class DVFMere(PgOutils):
             ids = {'mutation' : 'idmutation', 'local':'iddispoloc', 'disposition_parcelle':'iddispopar'}
             id = ids[nom_table_dvf]
             self.redefinir_valeur_sequence(self.schema_principal, table, id, code_creation)       
-        valid = self.effacer_table_dvf(self.schema_principal, table, code_creation)
-        valid2 = self.renommer_table_dvf_XXXX(self.schema_principal, table, code_creation)
+        if not self.effacer_table_dvf(self.schema_principal, table, code_creation):
+            return False
+        if not self.renommer_table_dvf_XXXX(self.schema_principal, table, code_creation):
+            return False
         for schema in self.schemas_departementaux:
-            valida = self.effacer_table_dvf(schema, table, code_creation)
-            validb = self.renommer_contraintes(schema, table, code_creation)
-            validc = self.renommer_table_dvf_XXXX(schema, table, code_creation)
-            if not (valida and validb and validc):
+            if not self.effacer_table_dvf(schema, table, code_creation):
                 return False
-        valid3 = self.supprimer_trigger_table_dvf_XXXX(table, code_creation)
-        return True if valid and valid2 and valid3 else False
+            if not self.renommer_contraintes(schema, table, code_creation):
+                return False
+            if not self.renommer_table_dvf_XXXX(schema, table, code_creation):
+                return False
+        success = self.supprimer_trigger_table_dvf_XXXX(table, code_creation)
+        return success
     
     def redefinir_valeur_sequence(self, schema, table, id, code_creation):
         nom_table_dvf = self.nom_table_dvf(table, code_creation)
@@ -183,19 +203,19 @@ class DVFMere(PgOutils):
     
     def effacer_table_dvf(self, schema, table, code_creation):
         nom_table_dvf = self.nom_table_dvf(table, code_creation)
-        valid, nb = self.effacer_table(schema, nom_table_dvf)
-        return valid
+        success, _ = self.effacer_table(schema, nom_table_dvf)
+        return success
     
     def renommer_table_dvf_XXXX(self, schema, table, code_creation):
         nom_table_dvf = self.nom_table_dvf(table, code_creation)        
-        valid, nb = self.renommer_table(schema, table, nom_table_dvf)
-        return valid                
+        success, _ = self.renommer_table(schema, table, nom_table_dvf)
+        return success                
     
     def supprimer_trigger_table_dvf_XXXX(self, table, code_creation):
-        nom_table_dvf = self.nom_table_dvf(table, code_creation)
         if code_creation == 2:
-            valid, nb = self._supprimer_trigger(self.schema_principal, nom_table_dvf, table)
-            return valid
+            nom_table_dvf = self.nom_table_dvf(table, code_creation)
+            success, _ = self._supprimer_trigger(self.schema_principal, nom_table_dvf, table)
+            return success
         else:
             return True
     
@@ -207,19 +227,24 @@ class DVFMere(PgOutils):
     def _renommer_trigger(self, schema, nom_table_dvf, table):
         pass
     
-    def renommer_contraintes(self, schema, table, code_creation):
-        valid_pk, valid_u, valid_chk = True, True, True  
+    def renommer_contraintes(self, schema, table, code_creation):  
         nv_nom_table = self.nom_table_dvf(table, code_creation)
         champs = self.recuperer_contrainte(table, 'PK', code_creation)              
         if len(champs) > 0:
-            valid_pk, nb = self._renommer_contrainte(schema, table, nv_nom_table, '_pkey')
+            success, _ = self._renommer_contrainte(schema, table, nv_nom_table, '_pkey')
+            if not success:
+                return False
         champs = self.recuperer_contrainte(table, 'U', code_creation)        
         if len(champs) > 0:
-            valid_u, nb = self._renommer_contrainte(schema, table, nv_nom_table, '_unique')
+            success, _ = self._renommer_contrainte(schema, table, nv_nom_table, '_unique')
+            if not success:
+                return False
         champs = self.recuperer_contrainte(table, 'C', code_creation)        
         if len(champs) > 0:
-            valid_chk, nb = self._renommer_contrainte(schema, table, nv_nom_table, '_check')
-        return True if valid_chk and valid_pk and valid_u else False
+            success, _ = self._renommer_contrainte(schema, table, nv_nom_table, '_check')
+            if not success:
+                return False
+        return True
     
     @requete_sql
     def _renommer_contrainte(self, schema, table, nv_nom_table, suffixe):
@@ -284,25 +309,33 @@ class DVF(DVFMere):
         self.creer_fonctions_sql_dvf()    
                
     def creer_fonctions_sql_dvf(self):
-        valid, nb = self.creer_fonction_array_supprimer_null()
-        valid2, nb = self.creer_fonction_pgcd()
-        valid3, nb = self.creer_fonction_aggregat_first()
-        return True if valid and valid2 and valid3 else False
+        success, _ = self.creer_fonction_array_supprimer_null()
+        if not success:
+                return False
+        success, _ = self.creer_fonction_pgcd()
+        if not success:
+                return False
+        success, _ = self.creer_fonction_aggregat_first()
+        if not success:
+                return False
+        return True
     
     def effacer_et_creer_schemas_dvf(self):
-        valid = self.effacer_et_creer_schemas_dvf_departementaux()
-        valid2 = self.effacer_et_creer_schemas_dvf_principaux()
-        return True if valid and valid2 else False
+        if not self.effacer_et_creer_schemas_dvf_departementaux():
+            return False
+        if not self.effacer_et_creer_schemas_dvf_principaux():
+            return False
+        return True
         
     def effacer_et_creer_schemas_dvf_departementaux(self):
         schemas = self.schemas_departementaux 
-        valid, nb = self.effacer_et_creer_schemas(schemas)
-        return valid
+        success, _ = self.effacer_et_creer_schemas(schemas)
+        return success
     
     def effacer_et_creer_schemas_dvf_principaux(self):
         schemas = [self.schema_principal, self.schema_annexe]
-        valid, nb = self.effacer_et_creer_schemas(schemas)
-        return valid
+        success, _ = self.effacer_et_creer_schemas(schemas)
+        return success
         
     '''
     
@@ -311,20 +344,31 @@ class DVF(DVFMere):
     '''
     
     def creation_tables_annexes(self, fichierArtCGI, fichierNatCult, fichierNatCultSpe):
-        valid = self.creer_tables_annexes_vides()
-        valid2, nb = self.inserer_donnees_tables_annexes()
-        valid3, nb = self.creer_tables_annexes_temporaires()
-        valid4 = self.copier_fichiers_annexes_csv_dans_tables_annexes_temporaires(fichierArtCGI, fichierNatCult, fichierNatCultSpe)
-        valid5, nb = self.maj_tables_annexes()
-        valid6, nb = self.effacer_tables_commencant_par(self.schema_annexe, 'tmp_ann_')
-        return True if valid and valid2 and valid3 and valid4 and valid5 and valid6 else False
+        if not self.creer_tables_annexes_vides():
+            return False
+        success, _ = self.inserer_donnees_tables_annexes()
+        if not success:
+                return False
+        success, _ = self.creer_tables_annexes_temporaires()
+        if not success:
+                return False
+        if not self.copier_fichiers_annexes_csv_dans_tables_annexes_temporaires(fichierArtCGI, fichierNatCult, fichierNatCultSpe):
+            return False
+        success, _ = self.maj_tables_annexes()
+        if not success:
+                return False
+        success, _ = self.effacer_tables_commencant_par(self.schema_annexe, 'tmp_ann_')
+        if not success:
+                return False
+        return True
     
     def creer_tables_annexes_vides(self):                
         for table in self.TABLES_ANNEXES:
-            valid = self.creation_table_depuis_gestionnaire(self.schema_annexe, table, 1)
-            valid2 = self._ajout_commentaire_table(self.schema_annexe, table, 1)
-            valid3 = self._ajout_commentaires_champs(self.schema_annexe, table, 1)
-            if not (valid and valid2 and valid3):
+            if not self.creation_table_depuis_gestionnaire(self.schema_annexe, table, 1):
+                return False
+            if not self._ajout_commentaire_table(self.schema_annexe, table, 1):
+                return False
+            if not self._ajout_commentaires_champs(self.schema_annexe, table, 1):
                 return False
         return True        
     
@@ -337,11 +381,14 @@ class DVF(DVFMere):
         return (self.schema_annexe,)
     
     def copier_fichiers_annexes_csv_dans_tables_annexes_temporaires(self, fichierArtCGI, fichierNatCult, fichierNatCultSpe):
-        valid = self.pgconn.copy_from_csv(fichierNatCult, '|', '{0}.tmp_ann_nature_culture'.format(self.schema_annexe), False)            
-        valid2 = self.pgconn.copy_from_csv(fichierNatCultSpe, '|', '{0}.tmp_ann_nature_culture_speciale'.format(self.schema_annexe), False)
-        valid3 = self.pgconn.copy_from_csv(fichierArtCGI, '|', '{0}.tmp_ann_cgi'.format(self.schema_annexe), False)
+        if not self.pgconn.copy_from_csv(fichierNatCult, '|', '{0}.tmp_ann_nature_culture'.format(self.schema_annexe), False):
+            return False            
+        if not self.pgconn.copy_from_csv(fichierNatCultSpe, '|', '{0}.tmp_ann_nature_culture_speciale'.format(self.schema_annexe), False):
+            return False
+        if not self.pgconn.copy_from_csv(fichierArtCGI, '|', '{0}.tmp_ann_cgi'.format(self.schema_annexe), False):
+            return False
         self.redaction_script(self.script, '--\n--\n--\n--\n--\n--\n-- IMPORT DES FICHIERS ANNEXES '+', '.join([fichierNatCult, fichierNatCultSpe, fichierArtCGI])+' PAR UNE INSTRUCTION "COPY FROM"--\n--\n--\n--\n--\n--\n--\n--\n', False)
-        return True if valid and valid2 and valid3 else False            
+        return True            
          
     @requete_sql_avec_modification_args
     def maj_tables_annexes(self):
@@ -356,12 +403,13 @@ class DVF(DVFMere):
     
     def creation_tables(self, recreer_tables_principales = True):        
         if recreer_tables_principales:
-            valid = self.creation_tables_principales_et_departementales(self.TABLES, 1)
-            return valid
+            success = self.creation_tables_principales_et_departementales(self.TABLES, 1)
+            return success
         else:
-            valid = self.creer_tables_departementales_vides(self.TABLES, 1)
-            valid2 = self.creer_insert_triggers(self.TABLES, 1)
-            return True if valid and valid2 else False
+            if not self.creer_tables_departementales_vides(self.TABLES, 1):
+                return False
+            success = self.creer_insert_triggers(self.TABLES, 1)
+            return success
     
     '''
     
@@ -370,15 +418,23 @@ class DVF(DVFMere):
     '''
     
     def importer(self, fichier, table, recherche_differentielle = True):
-        valid, nb = self.creer_schema_si_inexistant('source')
-        valid2, nb = self.creer_table_import_temporaire()
-        valid3 = self.pgconn.copy_from_csv(fichier, '|', 'source.tmp', True)
+        success, _ = self.creer_schema_si_inexistant('source')
+        if not success:
+            return False
+        success, _ = self.creer_table_import_temporaire()
+        if not success:
+            return False
+        if not self.pgconn.copy_from_csv(fichier, '|', 'source.tmp', True):
+            return False
         if recherche_differentielle:
-            valid4 = self.creer_table_source_avec_recherche_differentielle(table)
+            if not self.creer_table_source_avec_recherche_differentielle(table):
+                return False
         else:
-            valid4 = self.creer_table_source_sans_recherche_differentielle(table)
-        valid5 = self.effacer_table('source', 'tmp')
-        return True if valid and valid2 and valid3 and valid4 and valid5 else False
+            if not self.creer_table_source_sans_recherche_differentielle(table):
+                return False
+        if not self.effacer_table('source', 'tmp'):
+            return False
+        return True
     
     @requete_sql
     def creer_table_import_temporaire(self):
@@ -402,11 +458,14 @@ class DVF(DVFMere):
         self.ecrire_entete_log()       
         for table_src in tables_sources:
             for departement in self.departements:
-                valid, nb = self.creer_table_source_departementale(table_src, departement)
+                success, _ = self.creer_table_source_departementale(table_src, departement)
+                if not success:
+                    return False
                 self.ecrire_entete_table_import_dans_log('{0}_d{1}'.format(table_src, departement))
-                valid2 = self.maj_tables_avec('{0}_d{1}'.format(table_src, departement))
-                valid3, nb = self.effacer_table('source', '{0}_d{1}'.format(table_src, departement))
-                if not (valid and valid2 and valid3):
+                if not self.maj_tables_avec('{0}_d{1}'.format(table_src, departement)):
+                    return False
+                success, _ = self.effacer_table('source', '{0}_d{1}'.format(table_src, departement))
+                if not success:
                     return False
         return True
     
@@ -425,29 +484,60 @@ class DVF(DVFMere):
     
     def maj_tables_avec(self, table_src):
         # Première partie des maj
-        valid, nb = self.effacer_table('source', 'tmp_calcul_lot')
-        valid2, nb = self.creer_table_calcul_lot(table_src)        
+        success, _ = self.effacer_table('source', 'tmp_calcul_lot')
+        if not success:
+            return False
+        success, _ = self.creer_table_calcul_lot(table_src)
+        if not success:
+            return False        
         #self.maj_table_ann_nature_mutation(table_src)  -->  ne sert plus, les données sont figées par la fonction inserer_donnees_tables_annexes
-        valid3, nb = self.maj_table_mutation(table_src)
-        valid4, nb = self.maj_table_mutation_art_cgi(table_src)
-        valid5, nb = self.maj_table_disposition(table_src)
-        valid6, nb = self.maj_table_parcelle(table_src)
-        valid7, nb = self.maj_table_disposition_parcelle(table_src)
-        valid8, nb = self.maj_table_adresse(table_src)
+        success, _ = self.maj_table_mutation(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_table_mutation_art_cgi(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_table_disposition(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_table_parcelle(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_table_disposition_parcelle(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_table_adresse(table_src)
+        if not success:
+            return False
         # Deuxième partie des maj
-        valid9, nb = self.effacer_table('source', table_src + '_tmp')
-        valid10, nb = self.creer_table_temporaire_intermediaire(table_src)
-        valid11, nb = self.maj_table_local(table_src)
-        valid12, nb = self.maj_table_volume(table_src)
-        valid13, nb = self.maj_table_suf(table_src)
-        valid14, nb = self.maj_table_lot(table_src)
-        valid15, nb = self.maj_tables_passages_adresses(table_src)        
-        valid16, nb = self.effacer_table('source', 'tmp_calcul_lot')
-        valid17, nb = self.effacer_table('source', table_src + '_tmp')
-        return True if (valid and valid2 and valid3 and valid4 and valid5 and 
-                        valid6 and valid7 and valid8 and valid9 and
-                        valid10 and valid11 and valid12 and valid13 and 
-                        valid14 and valid15 and valid16 and valid17) else False
+        success, _ = self.effacer_table('source', table_src + '_tmp')
+        if not success:
+            return False
+        success, _ = self.creer_table_temporaire_intermediaire(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_table_local(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_table_volume(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_table_suf(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_table_lot(table_src)
+        if not success:
+            return False
+        success, _ = self.maj_tables_passages_adresses(table_src)
+        if not success:
+            return False        
+        success, _ = self.effacer_table('source', 'tmp_calcul_lot')
+        if not success:
+            return False
+        success, _ = self.effacer_table('source', table_src + '_tmp')
+        if not success:
+            return False
+        return True
     
     @requete_sql
     def creer_table_calcul_lot(self, table_src):
@@ -550,15 +640,18 @@ class DVF_PLUS(DVFMere):
     
     def creation_tables_dvf_plus(self, recreer_tables_principales = True):
         if recreer_tables_principales:
-            valid = self.creation_tables_principales_et_departementales(self.TABLES, 2)
+            if not self.creation_tables_principales_et_departementales(self.TABLES, 2):
+                return False
         else:
             for table in self.TABLES: # on renomme les tables du schema principal avec l'extension _plus 
-                valid, nb = self.renommer_table(self.schema_principal, self.nom_table_dvf(table, 2), table)
-                valid2, nb = self._renommer_trigger(self.schema_principal, self.nom_table_dvf(table, 2), table)
-                if not (valid and valid2):
+                success, _ = self.renommer_table(self.schema_principal, self.nom_table_dvf(table, 2), table)
+                if not success:
                     return False
-            valid = self.creer_tables_departementales_vides(self.TABLES, 2)
-        return valid
+                success, _ = self._renommer_trigger(self.schema_principal, self.nom_table_dvf(table, 2), table)
+                if not success:
+                    return False
+            success = self.creer_tables_departementales_vides(self.TABLES, 2)
+        return success
 
     '''
 
@@ -570,27 +663,26 @@ class DVF_PLUS(DVFMere):
         variables_jointure = {'local' : 'iddispoloc', 
                               'disposition_parcelle': 'iddispopar', 
                               'mutation' : 'idmutation'}
-        valid_local, valid_parcelle, valid_mutation = False, False, False
         for table in self.TABLES:
             nom_table_dvf = self.nom_table_dvf(table, 2)
             if nom_table_dvf == 'local':
-                valid_local = self.effectuer_calculs_local()
+                if not self.effectuer_calculs_local():
+                    return False
             elif nom_table_dvf == 'disposition_parcelle':
-                valid_parcelle = self.effectuer_calculs_parcelle()
+                if not self.effectuer_calculs_parcelle():
+                    return False
             elif nom_table_dvf == 'mutation':
-                valid_mutation = self.effectuer_calculs_mutation()
-            valid = self.construire_tables_dvf_plus(nom_table_dvf, variables_jointure[nom_table_dvf])
-            if not valid:
+                if not self.effectuer_calculs_mutation():
+                    return False
+            if not self.construire_tables_dvf_plus(nom_table_dvf, variables_jointure[nom_table_dvf]):
                 return False
-        return True if valid_local and valid_parcelle and valid_mutation else False
+        return True
 
     def transformation_tables_dvf(self):
         for table in self.TABLES:
-            valid = self.renommage_tables(table, 2)
-            if not valid:
+            if not self.renommage_tables(table, 2):
                 return False
-        valid = self.creation_index_dvf_plus()
-        if not valid:
+        if not self.creation_index_dvf_plus():
             return False
         return True
     
@@ -610,40 +702,59 @@ class DVF_PLUS(DVFMere):
     
     def effectuer_calculs_parcelle(self):
         for schema in self.schemas_departementaux:
-            valid, nb = self.effacer_tables_commencant_par(schema, 'tmp_')
-            valid2 = self.creation_tables_calculs_temporaires_parcelle(schema)
-            if not (valid and valid2):
+            success, _ = self.effacer_tables_commencant_par(schema, 'tmp_')
+            if not success:
+                return False
+            if not self.creation_tables_calculs_temporaires_parcelle(schema):
                 return False
         return True
     
     def effectuer_calculs_mutation(self):
         for schema in self.schemas_departementaux:
-            valid, nb = self.effacer_tables_commencant_par(schema, 'tmp_')
-            valid2 = self.creation_tables_calculs_temporaires_mutation(schema)
-            if not (valid and valid2):
+            success, _ = self.effacer_tables_commencant_par(schema, 'tmp_')
+            if not success:
+                return False
+            if not self.creation_tables_calculs_temporaires_mutation(schema):
                 return False
         return True
     
     def creation_tables_calculs_temporaires_mutation(self, schema):
-        valid, nb = self.creer_table_calcul_ann_nature_mutation_idmutation(schema)
-        valid2, nb = self.creer_table_calcul_mutation_article_cgi_idmutation(schema)
-        valid3, nb = self.creer_table_calcul_vefa_idmutation(schema)
-        valid4, nb = self.creer_table_calcul_disposition_idmutation(schema)
-        valid5, nb = self.creer_table_calcul_disposition_parcelle_idmutation(schema, '_plus')
-        valid6, nb = self.creer_table_calcul_suf_idmutation(schema)
-        valid7, nb = self.creer_table_calcul_volume_idmutation(schema)
-        valid8, nb = self.creer_table_calcul_local_idmutation(schema)
-        return True if (valid and valid2 and valid3 and valid4 and valid5 and 
-                        valid6 and valid7 and valid8) else False
+        success, _ = self.creer_table_calcul_ann_nature_mutation_idmutation(schema)
+        if not success:
+            return False
+        success, _ = self.creer_table_calcul_mutation_article_cgi_idmutation(schema)
+        if not success:
+            return False
+        success, _ = self.creer_table_calcul_vefa_idmutation(schema)
+        if not success:
+            return False
+        success, _ = self.creer_table_calcul_disposition_idmutation(schema)
+        if not success:
+            return False
+        success, _ = self.creer_table_calcul_disposition_parcelle_idmutation(schema, '_plus')
+        if not success:
+            return False
+        success, _ = self.creer_table_calcul_suf_idmutation(schema)
+        if not success:
+            return False
+        success, _ = self.creer_table_calcul_volume_idmutation(schema)
+        if not success:
+            return False
+        success, _ = self.creer_table_calcul_local_idmutation(schema)
+        if not success:
+            return False
+        return True
     
     def creation_tables_calculs_temporaires_local(self, schema):
-        valid, nb = self.creer_table_calcul_local_iddispoloc(schema)
-        return valid
+        success, _ = self.creer_table_calcul_local_iddispoloc(schema)
+        return success
     
     def creation_tables_calculs_temporaires_parcelle(self, schema):
-        valid, nb = self.creer_table_calcul_parcelle_iddispopar(schema)
-        valid2, nb = self.creer_table_calcul_suf_iddispopar(schema)
-        return True if (valid and valid2) else False
+        success, _ = self.creer_table_calcul_parcelle_iddispopar(schema)
+        if not success:
+            return False
+        success, _ = self.creer_table_calcul_suf_iddispopar(schema)
+        return success
     
     @requete_sql
     def creer_table_calcul_parcelle_iddispopar(self, schema):
@@ -697,9 +808,11 @@ class DVF_PLUS(DVFMere):
     
     def construire_tables_dvf_plus(self, nom_table_dvf, variable_jointure):        
         for schema in self.schemas_departementaux:
-            valid, nb = self.executer_requete_jointure(schema, nom_table_dvf, variable_jointure)
-            valid2, nb = self.effacer_tables_commencant_par(schema, 'tmp_')
-            if not (valid and valid2):
+            success, _ = self.executer_requete_jointure(schema, nom_table_dvf, variable_jointure)
+            if not success:
+                return False
+            success, _ = self.effacer_tables_commencant_par(schema, 'tmp_')
+            if not success:
                 return False
         return True
 
@@ -740,8 +853,8 @@ SELECT \n\t''' % {'schema':schema, 'table':table + '_plus', 'variable':', '.join
     
     def creation_index_dvf_plus(self):
         for schema in self.schemas_departementaux:
-            valid, nb = self.creer_index_gin_champ_lcodinsee(schema)
-            if not valid:
+            success, _ = self.creer_index_gin_champ_lcodinsee(schema)
+            if not success:
                 return False
         return True
     

@@ -114,7 +114,3 @@ def repartition_departements(departements):
         div_departements.append(departements[int(i*len(departements)/nb_div):int((i+1)*len(departements)/nb_div)])
     return div_departements
 
-
-if __name__ == '__main__':
-    r = RepertoireDonneesDVF('C:/Users/antoine.herman/Desktop/DATA - EPF')
-    print(r.fichiers_sources)
