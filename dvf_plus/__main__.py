@@ -6,27 +6,27 @@ from .general import generer_dvf_plus
 
 def main():
     args = sys.argv
-    args = cmd_line(args)
     contexte = Contexte(args)
     generer_dvf_plus(contexte)
-
-def cmd_line(args):
-    parser = argparse.ArgumentParser(description='Module permettant de générer une base DVF+')
-    parser.add_argument('repertoire', default='.', help='Répertoire contenant les données sources')
-    parser.add_argument('-H', '--host', help="hôte du serveur PostgreSQL", default='localhost')
-    parser.add_argument('-d', '--database', help="nom de la base de données", required= True)
-    parser.add_argument('-p', '--port', help="port d'écoute du serveur PostgreSQL", default='5432')
-    parser.add_argument('-u', '--user', help="nom de l'utilisateur PostgreSQL", default='postgres')
-    parser.add_argument('-w', '--password', help="mot de passe de l'utilisateur PostgreSQL", default='postgres')
-    parser.add_argument('-N', '--no-delete', action='store_true', help="ne pas effacer les schemas dvf_dXX des autres départements existants",default=False)
-    return parser.parse_args()
 
 class Contexte():
     
     def __init__(self, args):
+        args = self.cmd_line(args)
         self.repertoire = self.validation_repertoire(args.repertoire)
         self.parametres_connexion = self.validation_connexion(host=args.host, bdd=args.database, port=args.port, user=args.user, pwd=args.password)
         self.effacer_schemas_existants = not args.no_delete
+
+    def cmd_line(self, args):
+        parser = argparse.ArgumentParser(description='Module permettant de générer une base DVF+')
+        parser.add_argument('repertoire', default='.', help='Répertoire contenant les données sources')
+        parser.add_argument('-H', '--host', help="hôte du serveur PostgreSQL", default='localhost')
+        parser.add_argument('-d', '--database', help="nom de la base de données", required= True)
+        parser.add_argument('-p', '--port', help="port d'écoute du serveur PostgreSQL", default='5432')
+        parser.add_argument('-u', '--user', help="nom de l'utilisateur PostgreSQL", default='postgres')
+        parser.add_argument('-w', '--password', help="mot de passe de l'utilisateur PostgreSQL", default='postgres')
+        parser.add_argument('-N', '--no-delete', action='store_true', help="ne pas effacer les schemas dvf_dXX des autres départements existants",default=False)
+        return parser.parse_args()
         
     def validation_repertoire(self, repertoire):
         repertoire = os.path.abspath(repertoire)
