@@ -651,7 +651,9 @@ class DVF_PLUS(DVFMere):
                 if not success:
                     return False
             success = self.creer_tables_departementales_vides(self.TABLES, 2)
-        return success
+            if not success:
+                return False
+        return True
 
     '''
 
