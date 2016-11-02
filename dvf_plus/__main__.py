@@ -7,7 +7,9 @@ from .general import generer_dvf_plus
 def main():
     args = sys.argv
     contexte = Contexte(args)
-    generer_dvf_plus(contexte)
+    success = generer_dvf_plus(contexte)
+    if success:
+        print('TRAITEMENT ACHEVE')
 
 class Contexte():
     
@@ -49,6 +51,5 @@ class Contexte():
 
 if __name__=='__main__':    
     main()
-    print('''TRAITEMENT TERMINE''')
     
 #eof

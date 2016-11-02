@@ -12,9 +12,11 @@ def generer_dvf_plus(contexte):
         sys.exit(repertoire.erreurs[0])
     sous_groupes_departements = repartition_departements(repertoire.departements)    
     for sous_groupe_departements in sous_groupes_departements:
-        if creation_dvf(contexte, repertoire, sous_groupe_departements):
-            creation_dvf_plus(contexte, sous_groupe_departements)
-        contexte.effacer_schemas_dvf_existants = False
+        if not creation_dvf(contexte, repertoire, sous_groupe_departements):
+            return False
+        if not creation_dvf_plus(contexte, sous_groupe_departements):
+            return False
+        contexte.effacer_schemas_existants = False
     return True
 
 def creation_dvf(contexte, repertoire, departements):

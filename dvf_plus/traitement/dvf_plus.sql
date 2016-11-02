@@ -318,6 +318,9 @@ CREATE TABLE {0}.tmp_calcul_local_idmutation AS(
 ); 
 
 ## CREER_INDEX_GIN_CHAMP_LCODINSEE
-DROP INDEX IF EXISTS l_codinsee_idx_gin;
+DROP INDEX IF EXISTS l_codinsee_idx_gin_{0};
 CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
-l_codinsee_idx_gin ON {0}.mutation USING GIN (l_codinsee);
+l_codinsee_idx_gin_{0} ON {0}.mutation USING GIN (l_codinsee);
+DROP INDEX IF EXISTS codcomm_idx_btree_{0};
+CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
+codcomm_idx_btree_{0} ON {0}.disposition_parcelle USING BTREE (codcomm);
