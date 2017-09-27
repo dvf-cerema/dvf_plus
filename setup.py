@@ -18,7 +18,7 @@ from setuptools import find_packages
 
 setup(
     name='dvf_plus',
-    version='0.2.1',
+    version='0.2.2',
     description='module permettant la création d\'une base DVF+',
     author='Antoine HERMAN',
     author_email='antoine.herman@cerema.fr',
