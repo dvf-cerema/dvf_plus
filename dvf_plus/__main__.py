@@ -28,7 +28,7 @@ class Contexte():
         parser.add_argument('-u', '--user', help="nom de l'utilisateur PostgreSQL", default='postgres')
         parser.add_argument('-w', '--password', help="mot de passe de l'utilisateur PostgreSQL", default='postgres')
         parser.add_argument('-N', '--no-delete', action='store_true', help="ne pas effacer les schemas dvf_dXX des autres départements existants",default=False)
-        return parser.parse_args(args)
+        return parser.parse_args(args[1:])
         
     def validation_repertoire(self, repertoire):
         repertoire = os.path.abspath(repertoire)
