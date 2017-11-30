@@ -26,6 +26,7 @@ TABLES['ann_nature_culture'] = 'table contenant les différentes natures de cult
 TABLES['ann_nature_culture_speciale'] = 'table contenant les différentes natures de culture spéciale'
 TABLES['ann_nature_mutation'] = 'table contenant les natures de mutation'
 TABLES['ann_type_local'] = 'table contenant les types de locaux'
+TABLES['ann_typologie'] = 'table contenant les codes et libellés de la typologie des biens du GnDVF'
 
 class VariableDVF():
     '''
