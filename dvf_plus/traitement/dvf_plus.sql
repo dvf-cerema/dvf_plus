@@ -321,6 +321,18 @@ CREATE TABLE {0}.tmp_calcul_local_idmutation AS(
 DROP INDEX IF EXISTS l_codinsee_idx_gin_{0};
 CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
 l_codinsee_idx_gin_{0} ON {0}.mutation USING GIN (l_codinsee);
+DROP INDEX IF EXISTS datemut_mutation_idx_btree_{0};
+CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
+datemut_mutation_idx_btree_{0} ON {0}.mutation USING BTREE (datemut);
 DROP INDEX IF EXISTS codcomm_idx_btree_{0};
 CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
 codcomm_idx_btree_{0} ON {0}.disposition_parcelle USING BTREE (codcomm);
+DROP INDEX IF EXISTS datemut_parcelle_idx_btree_{0};
+CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
+datemut_parcelle_idx_btree_{0} ON {0}.disposition_parcelle USING BTREE (datemut);
+DROP INDEX IF EXISTS idpar_local_idx_btree_{0};
+CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
+idpar_local_idx_btree_{0} ON {0}.local USING BTREE (idpar);
+DROP INDEX IF EXISTS datemut_local_idx_btree_{0};
+CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
+datemut_local_idx_btree_{0} ON {0}.local USING BTREE (datemut);
