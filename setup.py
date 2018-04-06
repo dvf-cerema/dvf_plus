@@ -7,7 +7,7 @@ Le résultat est dans le répertoire dist
 
 Installation de l'archive sur un autre environnement
 
-  pip install dvf-plus-0.2.1.zip
+  pip install dvf-plus-0.2.3.zip
 
 
 """
@@ -18,7 +18,7 @@ from setuptools import find_packages
 
 setup(
     name='dvf_plus',
-    version='0.2.2',
+    version='0.2.3',
     description='module permettant la création d\'une base DVF+',
     author='Antoine HERMAN',
     author_email='antoine.herman@cerema.fr',

@@ -17,7 +17,7 @@ CREATE TABLE {0}.tmp_parcelle_mutee_rangee AS(
         idparcelle, datemut, anneemut, l_idmut, l_iddispopar, nbmutjour, rank() OVER (PARTITION BY idparcelle ORDER BY datemut) as rang
     FROM(
         SELECT 
-            t.idparcelle, tt.datemut, tt.anneemut, array_agg(tt.idmutation) as l_idmut, array_agg(t.iddispopar) As l_iddispopar, count(*) as nbmutjour
+            t.idparcelle, tt.datemut, tt.anneemut, array_agg(DISTINCT tt.idmutation) as l_idmut, array_agg(DISTINCT t.iddispopar) As l_iddispopar, count(DISTINCT tt.idmutation) as nbmutjour
         FROM(
             SELECT t1.idmutation, t1.iddispopar, t1.idparcelle
             FROM {0}.disposition_parcelle t1 
@@ -123,7 +123,7 @@ CREATE TABLE {0}.tmp_local_mutee_rangee AS(
         idloc, datemut, anneemut, l_idmut, nbmutjour, rank() OVER (PARTITION BY idloc ORDER BY datemut) as rang
     FROM(
         SELECT 
-            t.idloc, tt.datemut, tt.anneemut, array_agg(tt.idmutation) as l_idmut, count(*) as nbmutjour
+            t.idloc, tt.datemut, tt.anneemut, array_agg(DISTINCT tt.idmutation) as l_idmut, count(DISTINCT tt.idmutation) as nbmutjour
         FROM(
             SELECT t1.idmutation, t1.idloc
             FROM {0}.local t1  
@@ -209,7 +209,7 @@ CREATE TABLE {0}.tmp_calcul_disposition_idmutation AS(
     SELECT
         idmutation, 
         sum(valeurfonc) AS valeurfonc, 
-        count(iddispo) AS nbdispo, 
+        count(DISTINCT iddispo) AS nbdispo, 
         sum(nblot) AS nblot 
     FROM
         {0}.disposition
@@ -218,6 +218,7 @@ CREATE TABLE {0}.tmp_calcul_disposition_idmutation AS(
 );
 
 ## CREER_TABLE_CALCUL_DISPOSITION_PARCELLE_IDMUTATION
+-- RAPPEL IMPORTANT : Une même parcelle peut apparaître deux fois dans la table disposition_parcelle pour un même idmutation (elle peut apparaître dans 2 dispositions différentes)
 CREATE TABLE  {0}.tmp_calcul_disposition_parcelle_idmutation AS(
 
     SELECT 
@@ -234,7 +235,7 @@ CREATE TABLE  {0}.tmp_calcul_disposition_parcelle_idmutation AS(
         -- A partir de la version 9.3 de PostgreSQL:
         -- array_remove(array_agg(DISTINCT tt.idpar), NULL) AS l_idparmut
     FROM  {0}.disposition_parcelle{1} t
-    LEFT JOIN (SELECT idmutation, iddispopar, idpar FROM {0}.disposition_parcelle{1} WHERE parcvendue = TRUE) tt
+    LEFT JOIN (SELECT iddispopar, idpar FROM {0}.disposition_parcelle{1} WHERE parcvendue = TRUE) tt
     ON t.iddispopar = tt.iddispopar
     GROUP BY t.idmutation                    
 
@@ -245,7 +246,7 @@ CREATE TABLE {0}.tmp_calcul_suf_idmutation AS(
 
     SELECT 
         idmutation,
-        COALESCE(count(iddisposuf), 0) as nbsuf,
+        COALESCE(count(DISTINCT iddisposuf), 0) as nbsuf,
         COALESCE(sum(nbsufidt * sterr), 0) AS sterr,
         ARRAY[COALESCE(sum(nbsufidt * sterr * CASE WHEN nodcnt = 1 THEN 1 ELSE 0 END),0),
         COALESCE(sum(nbsufidt * sterr * CASE WHEN nodcnt = 2 THEN 1 ELSE 0 END),0),
@@ -260,7 +261,12 @@ CREATE TABLE {0}.tmp_calcul_suf_idmutation AS(
         COALESCE(sum(nbsufidt * sterr * CASE WHEN nodcnt = 11 THEN 1 ELSE 0 END),0),
         COALESCE(sum(nbsufidt * sterr * CASE WHEN nodcnt = 12 THEN 1 ELSE 0 END),0),
         COALESCE(sum(nbsufidt * sterr * CASE WHEN nodcnt = 13 THEN 1 ELSE 0 END),0)]::NUMERIC[] as l_dcnt
-    FROM  (SELECT m.idmutation, t.iddisposuf, t.nbsufidt, t.sterr, t.nodcnt FROM {0}.mutation m LEFT JOIN {0}.suf t ON m.idmutation = t.idmutation) tt 
+    FROM  (
+			SELECT m.idmutation, t.iddisposuf, t.nbsufidt, t.sterr, t.nodcnt 
+			FROM (SELECT DISTINCT ON (idmutation, idpar) *  FROM {0}.disposition_parcelle) m
+			LEFT JOIN {0}.suf t 
+			ON m.idmutation = t.idmutation AND m.iddispopar = t.iddispopar
+			) tt 
     GROUP BY idmutation                    
 
 );
@@ -276,12 +282,13 @@ CREATE TABLE {0}.tmp_calcul_volume_idmutation AS(
 );
 
 ## CREER_TABLE_CALCUL_LOCAL_IDMUTATION
+-- RAPPEL IMPORTANT : Un même local peut apparaître deux fois dans la table local pour un même idmutation (il peut apparaître dans 2 dispositions différentes)
 CREATE TABLE {0}.tmp_calcul_local_idmutation AS(
 
     SELECT 
         idmutation,
-        COALESCE(count(iddispoloc),0) as nblocmut,
-        array_supprimer_null(array_agg(idloc)) as l_idlocmut,
+        COALESCE(count(DISTINCT idloc),0) as nblocmut,
+        array_supprimer_null(array_agg(DISTINCT idloc)) as l_idlocmut,
         --
         -- à partir de la version 9.3
         -- array_remove(array_agg(idloc), NULL) as l_idlocmut,
@@ -313,7 +320,11 @@ CREATE TABLE {0}.tmp_calcul_local_idmutation AS(
         COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 3 THEN sbati ELSE 0 END),0) AS smai3pp,
         COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 4 THEN sbati ELSE 0 END),0) AS smai4pp,
         COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc > 4 THEN sbati ELSE 0 END),0) AS smai5pp
-    FROM (SELECT m.idmutation, l.iddispoloc, l.idloc, l.codtyploc, l.nbpprinc, l.sbati FROM {0}.mutation m LEFT JOIN {0}.local l ON m.idmutation = l.idmutation) t      
+    FROM (SELECT m.idmutation, l.idloc, l.codtyploc, l.nbpprinc, l.sbati 
+			FROM {0}.mutation m 
+			LEFT JOIN {0}.local l 
+			ON m.idmutation = l.idmutation
+			GROUP BY m.idmutation, l.idloc, l.codtyploc, l.nbpprinc, l.sbati) t      
     GROUP BY idmutation
 ); 
 
