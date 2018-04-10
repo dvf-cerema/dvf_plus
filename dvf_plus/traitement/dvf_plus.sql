@@ -263,7 +263,7 @@ CREATE TABLE {0}.tmp_calcul_suf_idmutation AS(
         COALESCE(sum(nbsufidt * sterr * CASE WHEN nodcnt = 13 THEN 1 ELSE 0 END),0)]::NUMERIC[] as l_dcnt
     FROM  (
 			SELECT m.idmutation, t.iddisposuf, t.nbsufidt, t.sterr, t.nodcnt 
-			FROM (SELECT DISTINCT ON (idmutation, idpar) *  FROM {0}.disposition_parcelle) m
+			FROM (SELECT DISTINCT ON (idmutation, idpar) *  FROM {0}.disposition_parcelle{1}) m
 			LEFT JOIN {0}.suf t 
 			ON m.idmutation = t.idmutation AND m.iddispopar = t.iddispopar
 			) tt 
@@ -322,7 +322,7 @@ CREATE TABLE {0}.tmp_calcul_local_idmutation AS(
         COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc > 4 THEN sbati ELSE 0 END),0) AS smai5pp
     FROM (SELECT m.idmutation, l.idloc, l.codtyploc, l.nbpprinc, l.sbati 
 			FROM {0}.mutation m 
-			LEFT JOIN {0}.local l 
+			LEFT JOIN (SELECT DISTINCT ON (idmutation, idloc) * FROM {0}.local) l 
 			ON m.idmutation = l.idmutation
 			GROUP BY m.idmutation, l.idloc, l.codtyploc, l.nbpprinc, l.sbati) t      
     GROUP BY idmutation

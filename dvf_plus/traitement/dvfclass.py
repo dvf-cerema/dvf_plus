@@ -736,7 +736,7 @@ class DVF_PLUS(DVFMere):
         success, _ = self.creer_table_calcul_disposition_parcelle_idmutation(schema, '_plus')
         if not success:
             return False
-        success, _ = self.creer_table_calcul_suf_idmutation(schema)
+        success, _ = self.creer_table_calcul_suf_idmutation(schema, '_plus')
         if not success:
             return False
         success, _ = self.creer_table_calcul_volume_idmutation(schema)
@@ -791,7 +791,7 @@ class DVF_PLUS(DVFMere):
         pass
     
     @requete_sql
-    def creer_table_calcul_suf_idmutation(self, schema):
+    def creer_table_calcul_suf_idmutation(self, schema, suffixe):
         pass
     
     @requete_sql
