@@ -575,14 +575,14 @@ INSERT INTO {0}.local
     idmutation, iddispopar, idpar, idloc, identloc, codtyploc, libtyploc, nbpprinc, sbati, coddep, datemut, anneemut, moismut
 )
 (
-    SELECT t.idmutation, t.iddispopar, t.idpar, t.idloc, t.identifiant_local, t.code_type_local, t.type_local, first(t.nombre_pieces_principales), first(t.surface_reelle_bati), t.coddep, t.datemut, t.anneemut, t.moismut
+    SELECT t.idmutation, t.iddispopar, t.idpar, t.idloc, t.identifiant_local, first(t.code_type_local) AS codtyploc, first(t.type_local), first(t.nombre_pieces_principales), first(t.surface_reelle_bati), t.coddep, t.datemut, t.anneemut, t.moismut
     FROM source.{1}_tmp t
     LEFT JOIN {0}.local t7 ON t.iddispopar=t7.iddispopar AND t.identifiant_local=t7.identloc
    WHERE 
         t7.iddispoloc IS NULL
         AND t.identifiant_local IS NOT NULL
-    GROUP BY t.idmutation, t.iddispopar, t.idpar, t.idloc, t.identifiant_local, t.code_type_local, t.type_local,  t.coddep, t.datemut, t.anneemut, t.moismut
-    ORDER BY t.idmutation, t.iddispopar, t.identifiant_local, t.code_type_local
+    GROUP BY t.idmutation, t.iddispopar, t.idpar, t.idloc, t.identifiant_local, t.coddep, t.datemut, t.anneemut, t.moismut
+    ORDER BY t.idmutation, t.iddispopar, t.identifiant_local, codtyploc
 );
 
 ## MAJ_TABLE_VOLUME
