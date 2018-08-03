@@ -188,7 +188,7 @@ class GestionVariablesDVF():
         '''
         self.tables = tables
     
-    def charger_tables_depuis_postgres(self, hote, base, port, utilisateur, motdepasse, schema, table_des_variables):
+    def charger_tables_depuis_postgres(self, hote, base, port, utilisateur, motdepasse, schema, table_des_variables, variable_active = True):
         '''
         Créer les objets TableDVF à partir des données de la table
         '''
@@ -199,10 +199,10 @@ class GestionVariablesDVF():
         tables = [r[0] for r in reponse]
         
         for table in tables:
-            variables = self._recuperer_variables_depuis_postgres(table, pgconn, schema, table_des_variables)
+            variables = self._recuperer_variables_depuis_postgres(table, pgconn, schema, table_des_variables, variable_active=variable_active)
             self.tables.append(TableDVF(table, variables))
     
-    def charger_tables_depuis_sqlite(self, fichier_sqlite, table_des_variables = 'docdv3f_variable'):
+    def charger_tables_depuis_sqlite(self, fichier_sqlite, table_des_variables = 'docdv3f_variable', variable_active = True):
         '''
         Créer les objets TableDVF à partir des données de la table
         '''
@@ -213,7 +213,7 @@ class GestionVariablesDVF():
         tables = [r[0] for r in reponse]
         
         for table in tables:
-            variables = self._recuperer_variables_depuis_sqlite(table, sqliteconn, table_des_variables)
+            variables = self._recuperer_variables_depuis_sqlite(table, sqliteconn, table_des_variables, variable_active=variable_active)
             self.tables.append(TableDVF(table, variables))
         
     def charger_tables_depuis_csv(self, fichier, separateur = '|', encodage = 'utf-8'):
@@ -278,10 +278,13 @@ class GestionVariablesDVF():
             print(contenu_csv, end='\n', file=f)
         
     
-    def _recuperer_variables_depuis_postgres(self, table, pgconn, schema, table_des_variables):
+    def _recuperer_variables_depuis_postgres(self, table, pgconn, schema, table_des_variables, variable_active = True):
         '''
         Envoie une requete SQL pour récupérer les données des variables et les renvoie sous forme de liste d'objet "VariableDVF".
         '''
+        condition = ''
+        if variable_active:
+            condition = ''' AND (jusque_version IS NULL OR jusque_version = '')'''
         sql = '''
             SELECT 
                     position,
@@ -293,8 +296,8 @@ class GestionVariablesDVF():
                     table_pour_creation,
                     code_etape_pour_creation
             FROM {0}.{1} 
-            WHERE table_associee = '{2}' 
-            ORDER BY position;'''.format(schema, table_des_variables, table)
+            WHERE table_associee = '{2}' {3}
+            ORDER BY position;'''.format(schema, table_des_variables, table, condition)
         reponse = pgconn.execute_recupere(sql)
         
         variables = []
@@ -302,7 +305,10 @@ class GestionVariablesDVF():
             variables.append(VariableDVF(*ligne))
         return variables
 
-    def _recuperer_variables_depuis_sqlite(self, table, sqliteconn, table_des_variables = 'docdv3f_variable'):            
+    def _recuperer_variables_depuis_sqlite(self, table, sqliteconn, table_des_variables = 'docdv3f_variable', variable_active = True): 
+        condition = ''
+        if variable_active:
+            condition = ''' AND (jusque_version IS NULL OR jusque_version = '')'''           
         sql = '''
         SELECT 
             position,
@@ -314,9 +320,9 @@ class GestionVariablesDVF():
             table_pour_creation,
             code_modele
         FROM {0} 
-        WHERE table_associee = '{1}' 
+        WHERE table_associee = '{1}' {2}
         ORDER BY position;
-        '''.format(table_des_variables, table)
+        '''.format(table_des_variables, table, condition)
         reponse = sqliteconn.execute_recupere(sql)
         
         variables = []
