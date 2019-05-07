@@ -91,6 +91,7 @@ SET datestyle = 'ISO, DMY';
 DROP TABLE IF EXISTS source.tmp;
 CREATE TABLE source.tmp
 (
+	id integer,
     code_service_ch character varying(7),
     reference_document character varying(10),
     "1_articles_cgi" character varying(20),
@@ -141,17 +142,26 @@ DROP TABLE IF EXISTS source.{0};
 CREATE TABLE source.{0} AS 
 (
     SELECT 
-        code_service_ch, reference_document,
-        concat(code_service_ch, '_', reference_document) AS idmutinvar, 
-        "1_articles_cgi", "2_articles_cgi", "3_articles_cgi", "4_articles_cgi", "5_articles_cgi", no_disposition, 
+		id AS no_ligne,
+        code_service_ch, 
+		reference_document,
+		CASE 
+			WHEN code_service_ch IS NOT NULL 
+				AND reference_document IS NOT NULL THEN FALSE 
+			ELSE TRUE
+		END AS opendata,
+        "1_articles_cgi", 
+        "2_articles_cgi", 
+        "3_articles_cgi", 
+        "4_articles_cgi",
+        "5_articles_cgi", 
+        no_disposition, 
         date_mutation, 
         EXTRACT(YEAR FROM date_mutation)::integer as anneemut,
         EXTRACT(MONTH FROM date_mutation)::integer as moismut,
         nature_mutation, 
-
         (replace(valeur_fonciere, ',', '.'))::numeric AS valeur_fonciere, 
-
-                no_voie, b_t_q, 
+        no_voie, b_t_q, 
         type_de_voie, code_voie, voie, lpad(code_postal,5,'0') AS code_postal, commune, 
         CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_departement,''), 2, '0') ELSE code_departement END AS code_departement,
         CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_commune,''), 3, '0') ELSE lpad(COALESCE(code_commune,''), 2, '0') END AS code_commune,
@@ -164,10 +174,15 @@ CREATE TABLE source.{0} AS
         "3eme_lot", (replace(surface_carrez_du_3eme_lot, ',', '.'))::numeric AS surface_carrez_du_3eme_lot, 
         "4eme_lot", (replace(surface_carrez_du_4eme_lot, ',', '.'))::numeric AS surface_carrez_du_4eme_lot, 
         "5eme_lot", (replace(surface_carrez_du_5eme_lot, ',', '.'))::numeric AS surface_carrez_du_5eme_lot, 
-        nombre_de_lots, code_type_local, 
-        type_local, identifiant_local, surface_reelle_bati, nombre_pieces_principales, 
-        nature_culture, nature_culture_speciale, surface_terrain,
-        
+        nombre_de_lots, 
+        code_type_local, 
+        type_local, 
+        identifiant_local, 
+        surface_reelle_bati, 
+        nombre_pieces_principales, 
+        nature_culture, 
+        nature_culture_speciale, 
+        surface_terrain,
        CASE 
                 WHEN nature_culture LIKE 'T%' THEN 1
                 WHEN nature_culture LIKE 'P%' THEN 2
@@ -184,27 +199,27 @@ CREATE TABLE source.{0} AS
                 WHEN nature_culture = 'S' THEN 13
             ELSE NULL 
             END AS nodcnt,
-
         CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_departement,''), 2, '0') ELSE code_departement END||
             CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_commune,''), 3, '0') ELSE lpad(COALESCE(code_commune,''), 2, '0') END||
             lpad(COALESCE(prefixe_de_section,''), 3, '0')||lpad(COALESCE(section,''), 2, '0')||lpad(COALESCE(no_plan,''), 4, '0') 
         AS idpar,
-        
-        CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_departement,''), 2, '0') ELSE code_departement END||
-            CASE 
-                WHEN lpad(COALESCE(prefixe_de_section,''), 3, '0') = '000' THEN 
-                    CASE 
-                        WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_commune,''), 3, '0') 
-                        ELSE lpad(COALESCE(code_commune,''), 2, '0') 
-                    END 
-                ELSE 
-                    CASE 
-                        WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(prefixe_de_section,''), 3, '0') 
-                        ELSE lpad(COALESCE(substring(prefixe_de_section from '..$'),''), 2, '0') 
-                    END 
-            END||
-            lpad(identifiant_local, 7, '0') AS idloc,
-
+        CASE WHEN identifiant_local IS NOT NULL THEN
+				CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_departement,''), 2, '0') ELSE code_departement END||
+				CASE 
+					WHEN lpad(COALESCE(prefixe_de_section,''), 3, '0') = '000' THEN 
+						CASE 
+							WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_commune,''), 3, '0') 
+							ELSE lpad(COALESCE(code_commune,''), 2, '0') 
+						END 
+					ELSE 
+						CASE 
+							WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(prefixe_de_section,''), 3, '0') 
+							ELSE lpad(COALESCE(substring(prefixe_de_section from '..$'),''), 2, '0') 
+						END 
+				END ||
+				lpad(identifiant_local, 7, '0')
+			ELSE NULL
+		END AS idloc_reel,
         CASE WHEN no_voie IS NULL THEN '' ELSE no_voie::varchar END || '$' ||
             CASE WHEN b_t_q IS NULL THEN '' ELSE b_t_q END || '$' ||
             CASE WHEN code_voie IS NULL THEN '' ELSE code_voie END || '$' ||
@@ -213,18 +228,21 @@ CREATE TABLE source.{0} AS
             CASE WHEN code_postal IS NULL THEN '' ELSE code_postal END || '$' ||
             CASE WHEN commune IS NULL THEN '' ELSE commune END 
         AS idadr_tmp,
-        
         CASE WHEN nature_culture IS NULL THEN '' ELSE nature_culture::varchar END || '$' ||
             CASE WHEN nature_culture_speciale IS NULL THEN '' ELSE nature_culture_speciale::varchar END || '$' ||
             CASE WHEN surface_terrain IS NULL THEN '' ELSE surface_terrain::varchar END
-        AS idsuf_tmp
-        
+        AS idsuf_tmp,
+		CASE WHEN code_type_local IS NULL THEN '' ELSE code_type_local::VARCHAR END || '$' || 
+			CASE WHEN surface_reelle_bati IS NULL THEN '' ELSE surface_reelle_bati::VARCHAR END || '$' || 
+			CASE WHEN nombre_pieces_principales IS NULL THEN '' ELSE nombre_pieces_principales::VARCHAR END 
+		AS idloc_tmp
     FROM 
         source.tmp
 );
 
-
 ## CREER_TABLE_SOURCE_AVEC_RECHERCHE_DIFFERENTIELLE
+/* A REVOIR 
+
 DROP TABLE IF EXISTS source.{0};
 CREATE TABLE source.{0} AS 
 (
@@ -232,10 +250,15 @@ CREATE TABLE source.{0} AS
         t.*
     FROM(
     
-        SELECT 
-            code_service_ch, reference_document,
-            concat(code_service_ch, '_', reference_document) AS idmutinvar, 
-            "1_articles_cgi", "2_articles_cgi", "3_articles_cgi", "4_articles_cgi", "5_articles_cgi", no_disposition, 
+        SELECT
+            NULL AS code_service_ch, NULL AS reference_document,
+            concat(code_service_ch, '_' ,reference_document) AS idmutinvar, -- NULL AS idmutinvar, 
+            NULL AS "1_articles_cgi", 
+            NULL AS "2_articles_cgi", 
+            NULL AS "3_articles_cgi", 
+            NULL AS "4_articles_cgi",
+            NULL AS "5_articles_cgi",  
+            no_disposition, 
             date_mutation, 
             EXTRACT(YEAR FROM date_mutation)::integer as anneemut,
             EXTRACT(MONTH FROM date_mutation)::integer as moismut,            
@@ -257,7 +280,15 @@ CREATE TABLE source.{0} AS
             "4eme_lot", (replace(surface_carrez_du_4eme_lot, ',', '.'))::numeric AS surface_carrez_du_4eme_lot, 
             "5eme_lot", (replace(surface_carrez_du_5eme_lot, ',', '.'))::numeric AS surface_carrez_du_5eme_lot, 
             nombre_de_lots, code_type_local, 
-            type_local, identifiant_local, surface_reelle_bati, nombre_pieces_principales, 
+            type_local, 
+            CASE 
+			WHEN  code_type_local IS NOT NULL THEN 
+				lpad((row_number() OVER (PARTITION BY concat(code_service_ch, '_' ,reference_document)))::TEXT, 5, '0') 
+			ELSE 
+				NULL 
+			END AS identifiant_local, 
+            surface_reelle_bati, 
+            nombre_pieces_principales, 
             nature_culture, nature_culture_speciale, surface_terrain,
             
             CASE 
@@ -276,27 +307,28 @@ CREATE TABLE source.{0} AS
                 WHEN nature_culture = 'S' THEN 13
             ELSE NULL 
             END AS nodcnt,
-    
+			
             CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_departement,''), 2, '0') ELSE code_departement END||
                 CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_commune,''), 3, '0') ELSE lpad(COALESCE(code_commune,''), 2, '0') END||
                 lpad(COALESCE(prefixe_de_section,''), 3, '0')||lpad(COALESCE(section,''), 2, '0')||lpad(COALESCE(no_plan,''), 4, '0') 
             AS idpar,
-            
-            CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_departement,''), 2, '0') ELSE code_departement END||
-            CASE 
-                WHEN lpad(COALESCE(prefixe_de_section,''), 3, '0') = '000' THEN 
-                    CASE 
-                        WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_commune,''), 3, '0') 
-                        ELSE lpad(COALESCE(code_commune,''), 2, '0') 
-                    END 
-                ELSE 
-                    CASE 
-                        WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(prefixe_de_section,''), 3, '0') 
-                        ELSE lpad(COALESCE(substring(prefixe_de_section from '..$'),''), 2, '0') 
-                    END 
-            END||
-            lpad(identifiant_local, 7, '0') AS idloc,
-    
+            CASE WHEN identifiant_local IS NOT NULL THEN
+				CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_departement,''), 2, '0') ELSE code_departement END||
+				CASE 
+					WHEN lpad(COALESCE(prefixe_de_section,''), 3, '0') = '000' THEN 
+						CASE 
+							WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_commune,''), 3, '0') 
+							ELSE lpad(COALESCE(code_commune,''), 2, '0') 
+						END 
+					ELSE 
+						CASE 
+							WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(prefixe_de_section,''), 3, '0') 
+							ELSE lpad(COALESCE(substring(prefixe_de_section from '..$'),''), 2, '0') 
+						END 
+				END ||
+				lpad(identifiant_local, 7, '0')
+			ELSE NULL
+			END AS idloc,
             CASE WHEN no_voie IS NULL THEN '' ELSE no_voie::varchar END || '$' ||
                 CASE WHEN b_t_q IS NULL THEN '' ELSE b_t_q END || '$' ||
                 CASE WHEN code_voie IS NULL THEN '' ELSE code_voie END || '$' ||
@@ -305,7 +337,6 @@ CREATE TABLE source.{0} AS
                 CASE WHEN code_postal IS NULL THEN '' ELSE code_postal END || '$' ||
                 CASE WHEN commune IS NULL THEN '' ELSE commune END 
             AS idadr_tmp,
-            
             CASE WHEN nature_culture IS NULL THEN '' ELSE nature_culture::varchar END || '$' ||
                 CASE WHEN nature_culture_speciale IS NULL THEN '' ELSE nature_culture_speciale::varchar END || '$' ||
                 CASE WHEN surface_terrain IS NULL THEN '' ELSE surface_terrain::varchar END
@@ -319,12 +350,186 @@ CREATE TABLE source.{0} AS
     WHERE tt.idmutinvar IS NULL
 );
 
+*/
+
 ## CREER_TABLE_SOURCE_DEPARTEMENTALE
-DROP TABLE IF EXISTS source.{0}_d{1};
-CREATE TABLE source.{0}_d{1} AS
+DROP TABLE IF EXISTS source.{0}_d{1}_0;
+CREATE TABLE source.{0}_d{1}_0 AS
 (
 	SELECT * FROM source.{0} WHERE code_departement = '{2}'
 );
+
+DROP TABLE IF EXISTS source.{0}_d{1}_1;
+CREATE TABLE source.{0}_d{1}_1 AS
+( 
+	WITH detection_changement AS
+	(SELECT 
+		no_ligne,
+		MD5(COALESCE(idpar, 'P') ||
+			COALESCE(date_mutation::VARCHAR, '01-01-2000') || 
+			COALESCE(valeur_fonciere::VARCHAR, '0') || 
+			COALESCE(no_disposition, '0') || 
+			COALESCE(idadr_tmp, 'A') ||
+			COALESCE(idloc_tmp, 'L') ||
+			COALESCE(idsuf_tmp, 'S')) AS clef,
+		CASE 
+			WHEN (LAG(date_mutation) OVER (ORDER BY no_ligne) = date_mutation 
+				AND COALESCE(LAG(valeur_fonciere) OVER (ORDER BY no_ligne), 0) = COALESCE(valeur_fonciere, 0)
+				AND LAG(no_disposition) OVER (ORDER BY no_ligne) = no_disposition
+				AND LAG(nature_mutation) OVER (ORDER BY no_ligne) = nature_mutation)
+					OR
+				(LAG(date_mutation) OVER (ORDER BY no_ligne) = date_mutation
+				AND LAG(no_disposition) OVER (ORDER BY no_ligne) < no_disposition
+				AND LAG(nature_mutation) OVER (ORDER BY no_ligne) = nature_mutation) 
+				 THEN true
+			ELSE false
+		END AS same_mutation,
+		CASE WHEN idloc_tmp != '$$' THEN 
+			CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_departement,''), 2, '0') ELSE code_departement END||
+            CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_commune,''), 3, '0') ELSE lpad(COALESCE(code_commune,''), 2, '0') END||
+			lpad(no_ligne::VARCHAR, 10, '0') 
+		ELSE NULL END AS idloc_fictif
+	  FROM source.{0}_d{1}_0 t
+	  ORDER BY no_ligne
+	 )
+SELECT CASE 
+			WHEN opendata IS TRUE THEN tb.clef::VARCHAR 
+			ELSE concat(code_service_ch, '_' ,reference_document)::VARCHAR 
+	   END AS idmutinvar, idmutation, tb.clef, ta.*, idloc_fictif
+FROM source.{0}_d{1}_0 ta
+JOIN
+	(
+	SELECT no_ligne, idmutation, idloc_fictif, MD5(array_to_string(array_agg(clef) OVER (PARTITION BY idmutation), ',')) AS clef
+	FROM 
+	   (SELECT no_ligne, 
+			clef, 
+			max(CASE WHEN same_mutation IS FALSE THEN no_ligne ELSE 0 END) OVER (ORDER BY no_ligne) AS idmutation, 
+			idloc_fictif 
+		FROM detection_changement
+		) t1
+	) tb
+ON ta.no_ligne = tb.no_ligne
+);
+
+-- Cas des données open-data
+-- Recherche d'un idloc_fictif 
+-- On cherche les lignes pour lesquels il faudra peut être modifier l'identifiant idloc_fictif
+DROP TABLE IF EXISTS source.tmp_idloc_doublon_potentiel_0;
+CREATE TABLE source.tmp_idloc_doublon_potentiel_0 AS
+(
+	WITH lignes_risque_idloc_doublon AS
+	(
+		SELECT * 
+		FROM source.{0}_d{1}_1
+		WHERE idloc_fictif IS NOT NULL
+			AND idloc_reel IS NULL
+		     -- AND idsuf_tmp != '$$'
+	),
+	lignes_risque_idloc_doublon_2 AS
+	(
+		SELECT t1.*, nbloc_tmp_distinct, count(*) OVER (PARTITION BY idmutation, no_disposition, idpar, idsuf_tmp) AS nb_suf_idt_tmp  
+		FROM lignes_risque_idloc_doublon t1
+		JOIN
+		(
+			SELECT unnest(lignes) AS ligne,  nbloc_tmp_distinct
+			FROM (
+				SELECT array_agg(no_ligne) AS lignes, count(DISTINCT idloc_tmp) AS nbloc_tmp_distinct
+				FROM lignes_risque_idloc_doublon
+				GROUP BY idmutation, no_disposition, idpar
+				HAVING count(*) != 1 AND count(DISTINCT idloc_tmp) != count(idloc_tmp)
+			) t
+		) t2
+		ON t1.no_ligne = t2.ligne
+		
+	)
+	SELECT *, 
+		count(*) OVER w1 AS nbligne, 
+		first(idloc_fictif) OVER w2 AS idloc_test, 
+		count(*) OVER w2 AS nbligne_loc_tmp_idt, 
+		nb_suf_idt_tmp/pgcd((array_agg(nb_suf_idt_tmp) OVER w1)::integer[]) AS nbsuf_idt
+	FROM lignes_risque_idloc_doublon_2
+	WINDOW w1 AS (PARTITION BY idmutation, no_disposition, idpar), 
+		w2 AS (PARTITION BY idmutation, no_disposition, idpar, idloc_tmp)
+);
+
+DROP TABLE IF EXISTS source.tmp_idloc_doublon_potentiel;
+CREATE TABLE source.tmp_idloc_doublon_potentiel AS
+(
+	WITH calcul_suf_distinct AS ( 
+		SELECT idmutation, no_disposition, idpar, sum(nbsuf_idt) AS nbsuf_tmp_distinct
+		FROM
+		(
+			SELECT idmutation, no_disposition, idpar, idsuf_tmp, first(nbsuf_idt) AS nbsuf_idt 
+			FROM source.tmp_idloc_doublon_potentiel_0
+			GROUP BY idmutation, no_disposition, idpar, idsuf_tmp
+		) t
+		GROUP BY idmutation, no_disposition, idpar
+	)
+	SELECT t1.*, t2.nbsuf_tmp_distinct, (t1.nbligne_loc_tmp_idt/t2.nbsuf_tmp_distinct)::INTEGER AS nbloc_idt
+	FROM source.tmp_idloc_doublon_potentiel_0 t1
+	LEFT JOIN calcul_suf_distinct t2
+	ON t1.idmutation = t2.idmutation AND t1.no_disposition = t2.no_disposition AND t1.idpar = t2.idpar
+);
+
+DROP TABLE IF EXISTS source.{0}_d{1}_2;
+CREATE TABLE source.{0}_d{1}_2 AS
+(
+	WITH tmp_idloc_final  AS (
+		SELECT t1.*, CASE WHEN t1.idloc_reel IS NOT NULL THEN t1.idloc_reel ELSE t1.idloc_fictif || '_0' END AS idloc 
+		FROM source.{0}_d{1}_1 t1
+		LEFT JOIN source.tmp_idloc_doublon_potentiel t2
+		ON t1.no_ligne = t2.no_ligne
+		WHERE t2.no_ligne IS NULL
+
+		UNION
+
+		SELECT t1.*, idloc_test::VARCHAR || '_0' AS idloc
+		FROM source.{0}_d{1}_1 t1
+		JOIN source.tmp_idloc_doublon_potentiel t2
+		ON t1.no_ligne = t2.no_ligne
+		WHERE nbligne = nbsuf_tmp_distinct * nbloc_tmp_distinct
+
+		UNION
+
+		SELECT t1.*, t1.idloc_fictif::VARCHAR || '_0' AS idloc
+		FROM source.{0}_d{1}_1 t1
+		JOIN source.tmp_idloc_doublon_potentiel t2
+		ON t1.no_ligne = t2.no_ligne
+		WHERE nbsuf_tmp_distinct = 1
+
+	)
+	SELECT * FROM tmp_idloc_final
+
+	UNION
+
+	SELECT t1.*, t2.idloc 
+	FROM source.{0}_d{1}_1 t1
+	JOIN
+	(
+		SELECT t1.*, t1.idloc_test::VARCHAR || '_' || (row_number() OVER (PARTITION BY t1.idmutation, t1.no_disposition, t1.idpar, t1.idsuf_tmp, t1.idloc_tmp))::VARCHAR AS idloc
+		FROM source.tmp_idloc_doublon_potentiel t1
+		LEFT JOIN tmp_idloc_final t2
+		ON t1.no_ligne = t2.no_ligne
+		WHERE t2.no_ligne IS NULL
+	) t2
+	ON t1.no_ligne = t2.no_ligne
+);
+
+DROP TABLE IF EXISTS source.{0}_d{1};
+CREATE TABLE source.{0}_d{1} AS (
+	SELECT t1.* 
+	FROM source.{0}_d{1}_2 t1
+	LEFT JOIN dvf_d{1}.mutation t2
+	ON t1.clef = t2.idopendata 
+	WHERE t2.idopendata IS NULL
+);
+
+DROP TABLE IF EXISTS source.{0}_d{1}_0;
+DROP TABLE IF EXISTS source.{0}_d{1}_1;
+DROP TABLE IF EXISTS source.{0}_d{1}_2;
+DROP TABLE IF EXISTS source.tmp_idloc_doublon_potentiel_0;
+DROP TABLE IF EXISTS source.tmp_idloc_doublon_potentiel;
+
 
 ## CREER_TABLE_CALCUL_LOT
 CREATE TABLE source.tmp_calcul_lot AS(
@@ -374,15 +579,15 @@ INSERT INTO {0}.ann_nature_mutation(libnatmut)
 -- insertion table mutation
 INSERT INTO {0}.mutation 
 (
-    idmutinvar, idnatmut, codservch, refdoc, datemut, anneemut, moismut, coddep
+    idmutinvar, idopendata, idnatmut, codservch, refdoc, datemut, anneemut, moismut, coddep
 )
 (
-    SELECT t.idmutinvar, t1.idnatmut, t.code_service_ch, t.reference_document, t.date_mutation, t.anneemut, t.moismut, t.code_departement
+    SELECT t.idmutinvar, t.clef, t1.idnatmut, t.code_service_ch, t.reference_document, t.date_mutation, t.anneemut, t.moismut, t.code_departement
     FROM source.{1} t
     LEFT JOIN {2}.ann_nature_mutation t1 ON t.nature_mutation=t1.libnatmut
-    LEFT JOIN {0}.mutation t2 ON t.code_service_ch=t2.codservch AND t.reference_document=t2.refdoc 
+    LEFT JOIN {0}.mutation t2 ON t.idmutinvar=t2.idmutinvar 
     WHERE t2.idmutation IS NULL
-    GROUP BY t.idmutinvar, t.code_service_ch, t.reference_document, t.date_mutation, t1.idnatmut, t.anneemut, t.moismut, t.code_departement    
+    GROUP BY t.idmutinvar, t.clef, t.code_service_ch, t.reference_document, t.date_mutation, t1.idnatmut, t.anneemut, t.moismut, t.code_departement    
 );
 
 ## MAJ_TABLE_MUTATION_ART_CGI
@@ -394,7 +599,7 @@ INSERT INTO {0}.mutation_article_cgi
 (
     SELECT t2.idmutation, t3.idartcgi, 1 AS ordarticgi, t2.coddep
     FROM source.{1} t
-    LEFT JOIN {0}.mutation t2 ON t.code_service_ch=t2.codservch AND t.reference_document=t2.refdoc  
+    LEFT JOIN {0}.mutation t2 ON t.idmutinvar=t2.idmutinvar
     LEFT JOIN {2}.ann_cgi t3 ON t."1_articles_cgi"=t3.artcgi
     LEFT JOIN {0}.mutation_article_cgi t4 ON t2.idmutation=t4.idmutation AND 1=t4.ordarticgi
     WHERE 
@@ -406,7 +611,7 @@ INSERT INTO {0}.mutation_article_cgi
 
     SELECT t2.idmutation, t3.idartcgi, 2 AS ordarticgi, t2.coddep
     FROM source.{1} t
-    LEFT JOIN {0}.mutation t2 ON t.code_service_ch=t2.codservch AND t.reference_document=t2.refdoc  
+    LEFT JOIN {0}.mutation t2 ON t.idmutinvar=t2.idmutinvar  
     LEFT JOIN {2}.ann_cgi t3 ON t."2_articles_cgi"=t3.artcgi
     LEFT JOIN {0}.mutation_article_cgi t4 ON t2.idmutation=t4.idmutation AND 2=t4.ordarticgi
     WHERE 
@@ -418,7 +623,7 @@ INSERT INTO {0}.mutation_article_cgi
 
     SELECT t2.idmutation, t3.idartcgi, 3 AS ordarticgi, t2.coddep
     FROM source.{1} t
-    LEFT JOIN {0}.mutation t2 ON t.code_service_ch=t2.codservch AND t.reference_document=t2.refdoc  
+    LEFT JOIN {0}.mutation t2 ON t.idmutinvar=t2.idmutinvar  
     LEFT JOIN {2}.ann_cgi t3 ON t."3_articles_cgi"=t3.artcgi
     LEFT JOIN {0}.mutation_article_cgi t4 ON t2.idmutation=t4.idmutation AND 3=t4.ordarticgi
     WHERE 
@@ -430,7 +635,7 @@ INSERT INTO {0}.mutation_article_cgi
 
     SELECT t2.idmutation, t3.idartcgi, 4 AS ordarticgi, t2.coddep
     FROM source.{1} t
-    LEFT JOIN {0}.mutation t2 ON t.code_service_ch=t2.codservch AND t.reference_document=t2.refdoc  
+    LEFT JOIN {0}.mutation t2 ON t.idmutinvar=t2.idmutinvar  
     LEFT JOIN {2}.ann_cgi t3 ON t."4_articles_cgi"=t3.artcgi
     LEFT JOIN {0}.mutation_article_cgi t4 ON t2.idmutation=t4.idmutation AND 4=t4.ordarticgi
     WHERE 
@@ -442,7 +647,7 @@ INSERT INTO {0}.mutation_article_cgi
 
     SELECT t2.idmutation, t3.idartcgi, 5 AS ordarticgi, t2.coddep
     FROM source.{1} t
-    LEFT JOIN {0}.mutation t2 ON t.code_service_ch=t2.codservch AND t.reference_document=t2.refdoc  
+    LEFT JOIN {0}.mutation t2 ON t.idmutinvar=t2.idmutinvar  
     LEFT JOIN {2}.ann_cgi t3 ON t."5_articles_cgi"=t3.artcgi
     LEFT JOIN {0}.mutation_article_cgi t4 ON t2.idmutation=t4.idmutation AND 5=t4.ordarticgi
     WHERE 
@@ -464,7 +669,7 @@ INSERT INTO {0}.disposition
     (
         SELECT t2.idmutation, t.no_disposition, t.valeur_fonciere, t4.nblot, t.code_departement
         FROM source.{1} t
-        LEFT JOIN {0}.mutation t2 ON t.code_service_ch=t2.codservch AND t.reference_document=t2.refdoc
+        LEFT JOIN {0}.mutation t2 ON t.idmutinvar = t2.idmutinvar
         LEFT JOIN 
             (
                 SELECT 
@@ -510,7 +715,7 @@ INSERT INTO {0}.disposition_parcelle
 (
     SELECT t3.iddispo, t4.idparcelle, t2.idmutation, t2.coddep, t2.datemut, t.anneemut, t.moismut
     FROM source.{1} t
-    LEFT JOIN {0}.mutation t2 ON t.code_service_ch=t2.codservch AND t.reference_document=t2.refdoc 
+    LEFT JOIN {0}.mutation t2 ON t.idmutinvar=t2.idmutinvar 
     LEFT JOIN {0}.disposition t3 ON t2.idmutation=t3.idmutation AND t.no_disposition=t3.nodispo
     LEFT JOIN {0}.parcelle t4 ON t.idpar=t4.idpar
     LEFT JOIN {0}.disposition_parcelle t5 ON t3.iddispo=t5.iddispo AND t4.idparcelle=t5.idparcelle
@@ -561,7 +766,7 @@ CREATE TABLE source.{1}_tmp AS
         -- pour tous
         idadr_tmp, idsuf_tmp
     FROM source.{1} t
-    LEFT JOIN {0}.mutation t2 ON t.code_service_ch=t2.codservch AND t.reference_document=t2.refdoc 
+    LEFT JOIN {0}.mutation t2 ON t.idmutinvar=t2.idmutinvar 
     LEFT JOIN {0}.disposition t3 ON t2.idmutation=t3.idmutation AND t.no_disposition=t3.nodispo
     LEFT JOIN {0}.parcelle t4 ON t.idpar=t4.idpar
     LEFT JOIN {0}.disposition_parcelle t5 ON t3.iddispo=t5.iddispo AND t4.idparcelle=t5.idparcelle
@@ -577,12 +782,12 @@ INSERT INTO {0}.local
 (
     SELECT t.idmutation, t.iddispopar, t.idpar, t.idloc, t.identifiant_local, first(t.code_type_local) AS codtyploc, first(t.type_local), first(t.nombre_pieces_principales), first(t.surface_reelle_bati), t.coddep, t.datemut, t.anneemut, t.moismut
     FROM source.{1}_tmp t
-    LEFT JOIN {0}.local t7 ON t.iddispopar=t7.iddispopar AND t.identifiant_local=t7.identloc
+    LEFT JOIN {0}.local t7 ON t.iddispopar=t7.iddispopar AND t.idloc=t7.idloc
    WHERE 
         t7.iddispoloc IS NULL
-        AND t.identifiant_local IS NOT NULL
+        AND t.idloc IS NOT NULL
     GROUP BY t.idmutation, t.iddispopar, t.idpar, t.idloc, t.identifiant_local, t.coddep, t.datemut, t.anneemut, t.moismut
-    ORDER BY t.idmutation, t.iddispopar, t.identifiant_local, codtyploc
+    ORDER BY t.idmutation, t.iddispopar, t.idloc, codtyploc
 );
 
 ## MAJ_TABLE_VOLUME
@@ -651,7 +856,7 @@ INSERT INTO {0}.lot
         SELECT t1.iddispopar, t1.idmutation, t3.iddispoloc, t1."1er_lot" as nolot, surface_carrez_du_1er_lot as surf, t1.coddep
         FROM source.{1}_tmp t1
         LEFT JOIN {0}.lot t2 ON t1.iddispopar=t2.iddispopar AND t2.nolot=t1."1er_lot"
-        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.identifiant_local=t3.identloc
+        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.idloc=t3.idloc
         WHERE 
             t1."1er_lot" IS NOT NULL 
             AND t2.iddispolot IS NULL
@@ -661,7 +866,7 @@ INSERT INTO {0}.lot
         SELECT t1.iddispopar, t1.idmutation, t3.iddispoloc, t1."2eme_lot" as nolot, surface_carrez_du_2eme_lot as surf, t1.coddep
         FROM source.{1}_tmp t1
         LEFT JOIN {0}.lot t2 ON t1.iddispopar=t2.iddispopar AND t2.nolot=t1."2eme_lot"
-        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.identifiant_local=t3.identloc
+        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.idloc=t3.idloc
         WHERE 
             t1."2eme_lot" IS NOT NULL 
             AND t2.iddispolot IS NULL
@@ -671,7 +876,7 @@ INSERT INTO {0}.lot
         SELECT t1.iddispopar, t1.idmutation, t3.iddispoloc, t1."3eme_lot" as nolot, surface_carrez_du_3eme_lot as surf, t1.coddep
         FROM source.{1}_tmp t1
         LEFT JOIN {0}.lot t2 ON t1.iddispopar=t2.iddispopar AND t2.nolot=t1."3eme_lot"
-        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.identifiant_local=t3.identloc
+        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.idloc=t3.idloc
         WHERE 
             t1."3eme_lot" IS NOT NULL 
             AND t2.iddispolot IS NULL
@@ -681,7 +886,7 @@ INSERT INTO {0}.lot
         SELECT t1.iddispopar, t1.idmutation, t3.iddispoloc, t1."4eme_lot" as nolot, surface_carrez_du_4eme_lot as surf, t1.coddep
         FROM source.{1}_tmp t1
         LEFT JOIN {0}.lot t2 ON t1.iddispopar=t2.iddispopar AND t2.nolot=t1."4eme_lot"
-        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.identifiant_local=t3.identloc
+        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.idloc=t3.idloc
         WHERE 
             t1."4eme_lot" IS NOT NULL 
             AND t2.iddispolot IS NULL
@@ -691,7 +896,7 @@ INSERT INTO {0}.lot
         SELECT t1.iddispopar, t1.idmutation, t3.iddispoloc, t1."5eme_lot" as nolot, surface_carrez_du_5eme_lot as surf, t1.coddep
         FROM source.{1}_tmp t1
         LEFT JOIN {0}.lot t2 ON t1.iddispopar=t2.iddispopar AND t2.nolot=t1."5eme_lot"
-        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.identifiant_local=t3.identloc
+        LEFT JOIN {0}.local t3 ON t1.iddispopar=t3.iddispopar AND t1.idloc=t3.idloc
         WHERE 
             t1."5eme_lot" IS NOT NULL 
             AND t2.iddispolot IS NULL
@@ -705,7 +910,7 @@ CREATE TABLE source.tmp_adresse_dispoparc_local AS
 (
     SELECT t3.idadresse, t2.iddispoloc, t.iddispopar, t.coddep, t.idmutation
     FROM source.{1}_tmp t
-    LEFT JOIN {0}.local t2 ON t.iddispopar=t2.iddispopar AND t.identifiant_local=t2.identloc
+    LEFT JOIN {0}.local t2 ON t.iddispopar=t2.iddispopar AND t.idloc=t2.idloc
     LEFT JOIN {0}.adresse t3 ON t.idadr_tmp=t3.idadrinvar
 );
     -- insertion adresse_dispoparc

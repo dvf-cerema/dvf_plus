@@ -285,65 +285,78 @@ CREATE TABLE {0}.tmp_calcul_volume_idmutation AS(
 -- RAPPEL IMPORTANT : Un même local peut apparaître deux fois dans la table local pour un même idmutation (il peut apparaître dans 2 dispositions différentes)
 CREATE TABLE {0}.tmp_calcul_local_idmutation AS(
 
-    SELECT 
-        idmutation,
-        COALESCE(count(DISTINCT idloc),0) as nblocmut,
-        array_supprimer_null(array_agg(DISTINCT idloc)) as l_idlocmut,
-        --
-        -- à partir de la version 9.3
-        -- array_remove(array_agg(idloc), NULL) as l_idlocmut,
-        COALESCE(sum(CASE WHEN codtyploc = 1 THEN 1 ELSE 0 END),0) AS nblocmai,
-        COALESCE(sum(CASE WHEN codtyploc = 2 THEN 1 ELSE 0 END),0) AS nblocapt,
-        COALESCE(sum(CASE WHEN codtyploc = 3 THEN 1 ELSE 0 END),0) AS nblocdep,
-        COALESCE(sum(CASE WHEN codtyploc = 4 THEN 1 ELSE 0 END),0) AS nblocact,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc <= 1 THEN 1 ELSE 0 END),0) AS nbapt1pp,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 2 THEN 1 ELSE 0 END),0) AS nbapt2pp,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 3 THEN 1 ELSE 0 END),0) AS nbapt3pp,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 4 THEN 1 ELSE 0 END),0) AS nbapt4pp,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc > 4 THEN 1 ELSE 0 END),0) AS nbapt5pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc <= 1 THEN 1 ELSE 0 END),0) AS nbmai1pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 2 THEN 1 ELSE 0 END),0) AS nbmai2pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 3 THEN 1 ELSE 0 END),0) AS nbmai3pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 4 THEN 1 ELSE 0 END),0) AS nbmai4pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc > 4 THEN 1 ELSE 0 END),0) AS nbmai5pp,
-        COALESCE(sum(sbati),0) AS sbati,
-        COALESCE(sum(CASE WHEN codtyploc = 1 THEN sbati ELSE 0 END),0) AS sbatmai,
-        COALESCE(sum(CASE WHEN codtyploc = 2 THEN sbati ELSE 0 END),0) AS sbatapt,
-        COALESCE(sum(CASE WHEN codtyploc = 4 THEN sbati ELSE 0 END),0) AS sbatact,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc <= 1 THEN sbati ELSE 0 END),0) AS sapt1pp,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 2 THEN sbati ELSE 0 END),0) AS sapt2pp,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 3 THEN sbati ELSE 0 END),0) AS sapt3pp,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 4 THEN sbati ELSE 0 END),0) AS sapt4pp,
-        COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc > 4 THEN sbati ELSE 0 END),0) AS sapt5pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc <= 1 THEN sbati ELSE 0 END),0) AS smai1pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 2 THEN sbati ELSE 0 END),0) AS smai2pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 3 THEN sbati ELSE 0 END),0) AS smai3pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 4 THEN sbati ELSE 0 END),0) AS smai4pp,
-        COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc > 4 THEN sbati ELSE 0 END),0) AS smai5pp
-    FROM (SELECT m.idmutation, l.idloc, l.codtyploc, l.nbpprinc, l.sbati 
-			FROM {0}.mutation m 
-			LEFT JOIN (SELECT DISTINCT ON (idmutation, idloc) * FROM {0}.local) l 
-			ON m.idmutation = l.idmutation
-			GROUP BY m.idmutation, l.idloc, l.codtyploc, l.nbpprinc, l.sbati) t      
-    GROUP BY idmutation
+    	SELECT 
+			idmutation,
+			COALESCE(count(DISTINCT idloc),0) as nblocmut,
+			array_supprimer_null(array_agg(DISTINCT idloc)) as l_idlocmut,
+			--
+			-- à partir de la version 9.3
+			-- array_remove(array_agg(idloc), NULL) as l_idlocmut,
+			COALESCE(sum(CASE WHEN codtyploc = 1 THEN 1 ELSE 0 END),0) AS nblocmai,
+			COALESCE(sum(CASE WHEN codtyploc = 2 THEN 1 ELSE 0 END),0) AS nblocapt,
+			COALESCE(sum(CASE WHEN codtyploc = 3 THEN 1 ELSE 0 END),0) AS nblocdep,
+			COALESCE(sum(CASE WHEN codtyploc = 4 THEN 1 ELSE 0 END),0) AS nblocact,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc <= 1 THEN 1 ELSE 0 END),0) AS nbapt1pp,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 2 THEN 1 ELSE 0 END),0) AS nbapt2pp,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 3 THEN 1 ELSE 0 END),0) AS nbapt3pp,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 4 THEN 1 ELSE 0 END),0) AS nbapt4pp,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc > 4 THEN 1 ELSE 0 END),0) AS nbapt5pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc <= 1 THEN 1 ELSE 0 END),0) AS nbmai1pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 2 THEN 1 ELSE 0 END),0) AS nbmai2pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 3 THEN 1 ELSE 0 END),0) AS nbmai3pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 4 THEN 1 ELSE 0 END),0) AS nbmai4pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc > 4 THEN 1 ELSE 0 END),0) AS nbmai5pp,
+			COALESCE(sum(sbati),0) AS sbati,
+			COALESCE(sum(CASE WHEN codtyploc = 1 THEN sbati ELSE 0 END),0) AS sbatmai,
+			COALESCE(sum(CASE WHEN codtyploc = 2 THEN sbati ELSE 0 END),0) AS sbatapt,
+			COALESCE(sum(CASE WHEN codtyploc = 4 THEN sbati ELSE 0 END),0) AS sbatact,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc <= 1 THEN sbati ELSE 0 END),0) AS sapt1pp,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 2 THEN sbati ELSE 0 END),0) AS sapt2pp,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 3 THEN sbati ELSE 0 END),0) AS sapt3pp,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc = 4 THEN sbati ELSE 0 END),0) AS sapt4pp,
+			COALESCE(sum(CASE WHEN codtyploc = 2 AND nbpprinc > 4 THEN sbati ELSE 0 END),0) AS sapt5pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc <= 1 THEN sbati ELSE 0 END),0) AS smai1pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 2 THEN sbati ELSE 0 END),0) AS smai2pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 3 THEN sbati ELSE 0 END),0) AS smai3pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc = 4 THEN sbati ELSE 0 END),0) AS smai4pp,
+			COALESCE(sum(CASE WHEN codtyploc = 1 AND nbpprinc > 4 THEN sbati ELSE 0 END),0) AS smai5pp
+		FROM (SELECT m.idmutation, l.idloc, l.codtyploc, l.nbpprinc, l.sbati 
+				FROM {0}.mutation m 
+				LEFT JOIN (SELECT DISTINCT ON (idmutation, idloc) * FROM {0}.local) l 
+				ON m.idmutation = l.idmutation
+				GROUP BY m.idmutation, l.idloc, l.codtyploc, l.nbpprinc, l.sbati) t      
+		GROUP BY idmutation
+
 ); 
 
 ## CREER_INDEX_GIN_CHAMP_LCODINSEE
-DROP INDEX IF EXISTS l_codinsee_idx_gin_{0};
+DROP INDEX IF EXISTS {0}.l_codinsee_idx_gin_{0};
 CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
 l_codinsee_idx_gin_{0} ON {0}.mutation USING GIN (l_codinsee);
-DROP INDEX IF EXISTS datemut_mutation_idx_btree_{0};
+DROP INDEX IF EXISTS {0}.datemut_mutation_idx_btree_{0};
 CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
 datemut_mutation_idx_btree_{0} ON {0}.mutation USING BTREE (datemut);
-DROP INDEX IF EXISTS codcomm_idx_btree_{0};
+DROP INDEX IF EXISTS {0}.codcomm_idx_btree_{0};
 CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
 codcomm_idx_btree_{0} ON {0}.disposition_parcelle USING BTREE (codcomm);
-DROP INDEX IF EXISTS datemut_parcelle_idx_btree_{0};
+DROP INDEX IF EXISTS {0}.datemut_parcelle_idx_btree_{0};
 CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
 datemut_parcelle_idx_btree_{0} ON {0}.disposition_parcelle USING BTREE (datemut);
-DROP INDEX IF EXISTS idpar_local_idx_btree_{0};
+DROP INDEX IF EXISTS {0}.idmutation_parcelle_idx_btree_{0};
+CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
+idmutation_parcelle_idx_btree_{0} ON {0}.disposition_parcelle USING BTREE (idmutation);
+DROP INDEX IF EXISTS {0}.idpar_local_idx_btree_{0};
 CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
 idpar_local_idx_btree_{0} ON {0}.local USING BTREE (idpar);
-DROP INDEX IF EXISTS datemut_local_idx_btree_{0};
+DROP INDEX IF EXISTS {0}.idmutation_local_idx_btree_{0};
+CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
+idmutation_local_idx_btree_{0} ON {0}.local USING BTREE (idmutation);
+DROP INDEX IF EXISTS {0}.datemut_local_idx_btree_{0};
 CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
 datemut_local_idx_btree_{0} ON {0}.local USING BTREE (datemut);
+DROP INDEX IF EXISTS {0}.idmutation_adresse_parc_idx_btree_{0};
+CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
+idmutation_adresse_parc_idx_btree_{0} ON {0}.adresse_dispoparc USING BTREE (idmutation);
+DROP INDEX IF EXISTS {0}.idmutation_adresse_local_idx_btree_{0};
+CREATE INDEX --IF NOT EXISTS -- a partir de la 9.5
+idmutation_adresse_local_idx_btree_{0} ON {0}.adresse_local USING BTREE (idmutation);

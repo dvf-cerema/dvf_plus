@@ -464,9 +464,9 @@ class DVF(DVFMere):
                 self.ecrire_entete_table_import_dans_log('{0}_d{1}'.format(table_src, departement))
                 if not self.maj_tables_avec('{0}_d{1}'.format(table_src, departement)):
                     return False
-                success, _ = self.effacer_table('source', '{0}_d{1}'.format(table_src, departement))
-                if not success:
-                    return False
+                #success, _ = self.effacer_table('source', '{0}_d{1}'.format(table_src, departement))
+                #if not success:
+                #    return False
         return True
     
     def ecrire_entete_log(self):
@@ -492,9 +492,9 @@ class DVF(DVFMere):
             return False        
         #self.maj_table_ann_nature_mutation(table_src)  -->  ne sert plus, les données sont figées par la fonction inserer_donnees_tables_annexes
         success, _ = self.maj_table_mutation(table_src)
-        if not success:
-            return False
-        success, _ = self.maj_table_mutation_art_cgi(table_src)
+        #if not success:
+        #    return False
+        #success, _ = self.maj_table_mutation_art_cgi(table_src)
         if not success:
             return False
         success, _ = self.maj_table_disposition(table_src)

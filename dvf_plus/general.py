@@ -1,10 +1,14 @@
 import os, sys, threading
 from .traitement.dvfclass import DVF
 from .traitement.dvfclass import DVF_PLUS
+from .traitement.geomclass import ComplementDVFPlus
+from .traitement.geomclass import GeometrieParcelle
 from .traitement import BASE_SQLITE
 from .traitement import FICHIERS_ANNEXES
 from .controle import repartition_departements
+from .controle import ajout_no_ligne 
 from .controle import RepertoireDonneesDVF
+
 
 def generer_dvf_plus(contexte):    
     repertoire = RepertoireDonneesDVF(contexte.repertoire)
@@ -16,6 +20,9 @@ def generer_dvf_plus(contexte):
             return False
         if not creation_dvf_plus(contexte, sous_groupe_departements):
             return False
+        if contexte.geom:
+            if not creation_donnees_complementaires(contexte, sous_groupe_departements):
+                return False
         contexte.effacer_schemas_existants = False
     return True
 
@@ -50,8 +57,11 @@ def creation_dvf(contexte, repertoire, departements):
     
     # import des nouvelles données brutes dans le schema source
     for fichier, nom_table_source in zip(repertoire.fichiers_sources, repertoire.tables_sources):
-        if not dvf.importer(fichier, nom_table_source, recherche_differentielle=False):
+        ajout_no_ligne(fichier, './_tmp')
+        if not dvf.importer('./_tmp', nom_table_source, recherche_differentielle=False):
             _code_erreur('dvf2', fichier)
+        if os.path.exists('./tmp'):
+            os.remove('./tmp')
             
     # creation DVF
     if not dvf.integration_dans_dvf(repertoire.tables_sources):
@@ -97,6 +107,26 @@ def creation_dvf_plus(contexte, departements):
 
     dvf_plus.end_script()
     dvf_plus.deconnecter()
+    return True
+
+def creation_donnees_complementaires(contexte, departements):
+    geomdvf = ComplementDVFPlus(*contexte.parametres_connexion, departements=departements)
+    #ajout geometrie    
+    geomdvf.creer_extension_postgis()
+    geomparcelle = GeometrieParcelle(*contexte.parametres_connexion, departements=departements)
+    geomparcelle.rapatrier_tables_departementales_pci(*contexte.parametres_connexion_pci, schema_pci=contexte.schema_pci)
+    geomdvf.creer_champs_geometriques()
+    geomdvf.ajouter_commentaires_champs_geométriques()
+    geomdvf.mise_a_jour_geometries_local_depuis()
+    geomdvf.mise_a_jour_geometries_disposition_parcelle_depuis()
+    geomdvf.mise_a_jour_geometries_mutation()
+    geomdvf.creer_index_et_contraintes_geometriques()    
+    #ajout typologie
+    geomdvf.creer_table_annexe_typo()
+    geomdvf.creer_champs_typo_biens()
+    geomdvf.ajouter_commentaires_champs_typo()
+    geomdvf.mise_a_jour_typologie_mutation()
+    geomparcelle.effacer_tables_departementales_pci()
     return True
 
 

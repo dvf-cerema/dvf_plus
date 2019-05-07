@@ -4,6 +4,7 @@ import argparse
 import psycopg2
 from .general import generer_dvf_plus
 
+
 def main():
     args = sys.argv
     contexte = Contexte(args)
@@ -17,6 +18,8 @@ class Contexte():
         args = self.cmd_line(args)
         self.repertoire = self.validation_repertoire(args.repertoire)
         self.parametres_connexion = self.validation_connexion(host=args.host, bdd=args.database, port=args.port, user=args.user, pwd=args.password)
+        self.parametres_connexion_pci = (args.host, 'fichiersfonciers', args.port, args.user, args.password)
+        self.schema_pci = 'a0000_annexe_pci_datagouvfr'
         self.effacer_schemas_existants = not args.no_delete
 
     def cmd_line(self, args):
@@ -28,6 +31,7 @@ class Contexte():
         parser.add_argument('-u', '--user', help="nom de l'utilisateur PostgreSQL", default='postgres')
         parser.add_argument('-w', '--password', help="mot de passe de l'utilisateur PostgreSQL", default='postgres')
         parser.add_argument('-N', '--no-delete', action='store_true', help="ne pas effacer les schemas dvf_dXX des autres départements existants",default=False)
+        parser.add_argument('-G', '--geom', action="store_true", help="intégrer les geometries à partir du PCI Vecteur", default=False)
         return parser.parse_args(args[1:])
         
     def validation_repertoire(self, repertoire):
@@ -49,7 +53,7 @@ class Contexte():
             os.mkdir(repertoire_scripts)
         return os.path.join(repertoire_scripts, nom_fichier)
 
-if __name__=='__main__':    
+if __name__=='__main__':
     main()
     
 #eof
