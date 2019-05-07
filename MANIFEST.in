@@ -1,1 +1,5 @@
 recursive-include dvf_plus *.sql *.csv *.sqlite3
+exclude dvf_plus/general_test.py
+exclude dvf_plus_old/*.*
+exclude dvf_plus_old/ressources/*.*
+exclude dvf_plus_old/traitement/*.*

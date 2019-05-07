@@ -20,6 +20,7 @@ class Contexte():
         self.parametres_connexion = self.validation_connexion(host=args.host, bdd=args.database, port=args.port, user=args.user, pwd=args.password)
         self.parametres_connexion_pci = (args.host, 'fichiersfonciers', args.port, args.user, args.password)
         self.schema_pci = 'a0000_annexe_pci_datagouvfr'
+        self.geom = args.geom
         self.effacer_schemas_existants = not args.no_delete
 
     def cmd_line(self, args):
