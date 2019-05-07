@@ -356,7 +356,7 @@ CREATE TABLE source.{0} AS
 DROP TABLE IF EXISTS source.{0}_d{1}_0;
 CREATE TABLE source.{0}_d{1}_0 AS
 (
-	SELECT * FROM source.{0} WHERE code_departement = '{2}'
+	SELECT * FROM source.{0} {2} -- condition
 );
 
 DROP TABLE IF EXISTS source.{0}_d{1}_1;
@@ -519,7 +519,7 @@ DROP TABLE IF EXISTS source.{0}_d{1};
 CREATE TABLE source.{0}_d{1} AS (
 	SELECT t1.* 
 	FROM source.{0}_d{1}_2 t1
-	LEFT JOIN dvf_d{1}.mutation t2
+	LEFT JOIN dvf{3}.mutation t2
 	ON t1.clef = t2.idopendata 
 	WHERE t2.idopendata IS NULL
 );

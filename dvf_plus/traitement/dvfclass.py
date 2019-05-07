@@ -458,7 +458,7 @@ class DVF(DVFMere):
         self.ecrire_entete_log()       
         for table_src in tables_sources:
             for departement in self.departements:
-                success, _ = self.creer_table_source_departementale(table_src, departement)
+                success, _ = self.creer_table_source_departementale(table_src, departement, decoup_departement=True)
                 if not success:
                     return False
                 self.ecrire_entete_table_import_dans_log('{0}_d{1}'.format(table_src, departement))
@@ -479,8 +479,11 @@ class DVF(DVFMere):
         self.redaction_script(self.log, 'Table {0} : {1}|{2}|{3}\n'.format(table, str(nb_initial), str(nb_final), str(int(nb_final - nb_initial))), False)
     
     @requete_sql_avec_modification_args    
-    def creer_table_source_departementale(self, table_src, departement):
-        return table_src, departement, departement.upper()
+    def creer_table_source_departementale(self, table_src, departement, decoup_departement=True):
+
+        condition = "WHERE code_departement='{0}'".format(departement.upper()) if decoup_departement else ''
+        suffixe = '_d{0}'.format(departement) if decoup_departement else ''
+        return table_src, departement, condition, suffixe
     
     def maj_tables_avec(self, table_src):
         # Première partie des maj
