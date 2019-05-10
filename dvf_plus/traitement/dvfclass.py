@@ -333,8 +333,11 @@ class DVF(DVFMere):
         return success
     
     def effacer_et_creer_schemas_dvf_principaux(self):
-        schemas = [self.schema_principal, self.schema_annexe]
+        schemas = [self.schema_principal, self.schema_annexe, 'source']
         success, _ = self.effacer_et_creer_schemas(schemas)
+        if not success:
+            return False
+        success, _ = self.effacer_et_creer_sequence('source', 'seq_idloc_fictif')
         return success
         
     '''
@@ -418,9 +421,6 @@ class DVF(DVFMere):
     '''
     
     def importer(self, fichier, table, recherche_differentielle = True):
-        success, _ = self.creer_schema_si_inexistant('source')
-        if not success:
-            return False
         success, _ = self.creer_table_import_temporaire()
         if not success:
             return False

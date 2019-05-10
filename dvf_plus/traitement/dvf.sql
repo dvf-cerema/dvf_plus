@@ -387,7 +387,7 @@ CREATE TABLE source.{0}_d{1}_1 AS
 		CASE WHEN idloc_tmp != '$$' THEN 
 			CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_departement,''), 2, '0') ELSE code_departement END||
             CASE WHEN code_departement NOT LIKE '97_' THEN lpad(COALESCE(code_commune,''), 3, '0') ELSE lpad(COALESCE(code_commune,''), 2, '0') END||
-			lpad(no_ligne::VARCHAR, 10, '0') 
+			lpad(nextval('source.seq_idloc_fictif')::VARCHAR, 10, '0') 
 		ELSE NULL END AS idloc_fictif
 	  FROM source.{0}_d{1}_0 t
 	  ORDER BY no_ligne
